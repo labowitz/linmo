@@ -178,9 +178,9 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
         df_melt_100resamples_subset_list.append(df_melt_100resamples_subtree)
     df_melt_100resamples_subset = pd.concat(df_melt_100resamples_subset_list)
 
-    df_true_melt_subset['min'] = [df_melt_subset.groupby(['subtree_val']).min().loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['mean'] = [df_melt_subset.groupby(['subtree_val']).mean().loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['max'] = [df_melt_subset.groupby(['subtree_val']).max().loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['min'] = [df_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['mean'] = [df_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['max'] = [df_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
     
     # calculate p-value (one-sided test)
     adj_p_val_list = []
@@ -246,9 +246,9 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
         df_zscores_i_concat_melt_100resamples_subset_list.append(df_zscores_i_concat_melt_100resamples_subtree)
     df_zscores_i_concat_melt_100resamples_subset = pd.concat(df_zscores_i_concat_melt_100resamples_subset_list)
     
-    df_true_melt_subset['z-score min'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).min().loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['z-score mean'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).mean().loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['z-score max'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).max().loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['z-score min'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['z-score mean'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['z-score max'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
     
     return (df_true_melt_subset, df_melt_subset, df_melt_100resamples_subset, df_zscores_i_concat_melt_subset, df_zscores_i_concat_melt_100resamples_subset)
 
@@ -295,11 +295,11 @@ def _make_circle(color, size, x, y, alpha):
                         pad=0)
     return c1
 
-
 def plot_frequency(subtree, 
                    df_true_melt_subset, 
                    df_melt_subset, 
                    df_melt_100resamples_subset, 
+                   cell_color_dict,
                    cutoff='auto', 
                    legend_bool=True, 
                    legend_pos='outside',
@@ -326,6 +326,8 @@ def plot_frequency(subtree,
     df_melt_100resamples_subset : DataFrame 
         Melted DataFrame with observed count for cutoff number of most significant subtrees (100 random resamples)
         Output from dfs_for_plotting function
+    cell_color_dict : dictionary
+        Keys are cell fates, values are colors
     cutoff : int
         Take cutoff number of subtrees with largest absolute z-scores to include in plots
         If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1
@@ -529,12 +531,12 @@ def plot_frequency(subtree,
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
-
-
+        
 def plot_deviation(subtree, 
                    df_true_melt_subset, 
                    df_zscores_i_concat_melt_subset, 
                    df_zscores_i_concat_melt_100resamples_subset, 
+                   cell_color_dict,
                    cutoff='auto', 
                    legend_bool=True,
                    legend_pos='outside',
@@ -561,6 +563,8 @@ def plot_deviation(subtree,
     df_melt_100resamples_subset : DataFrame 
         Melted DataFrame with observed count for cutoff number of most significant subtrees (100 random resamples)
         Output from dfs_for_plotting function
+    cell_color_dict : dictionary
+        Keys are cell fates, values are colors
     cutoff : int
         Take cutoff number of subtrees with largest absolute z-scores to include in plots
         If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1
@@ -763,11 +767,3 @@ def plot_deviation(subtree,
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
-
-
-
-
-
-
-
-
