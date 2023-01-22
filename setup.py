@@ -19,7 +19,7 @@ for line in init:
 
 
 setup(
-    name='tinypkg',
+    name='lma',
     version=__version__,
     author=__author__,
     author_email=__email__,
