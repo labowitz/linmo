@@ -1,3 +1,14 @@
+"""
+## lma.plot
+Provides functions for visualizing motif analysis.
+
+This module contains the following functions:
+
+- `dfs_for_plotting` - Takes DataFrame from resample_trees functions and returns DataFrame for plotting.
+- `make_cell_color_dict` - Returns cell color dictionary based on provided cell fates.
+- `plot_frequency` - Displays frequency plot of `cutoff` number of subtrees in original dataset and all resamples.
+- `plot_deviation` - Displays deviation plot of `cutoff` number of subtrees in original dataset and a subset of resamples.
+"""
 # +
 # packages for both analysis and plotting
 import numpy as np
@@ -21,101 +32,65 @@ mpl.rcParams.update({'font.size': 8})
 # -
 
 def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num_null=1000):
-    '''
-    Converts DataFrame out from resample_trees functions into DataFrames for plotting
-    Calculates z-scores for subtrees by comparing the observed number to the mean/std across all resamples
-    Calculates null z-scores by comparing the observed number of 100 random resamples 
-    to the mean/std across the rest of the resamples
+    """Converts DataFrame from resample_trees functions into DataFrames for plotting.
     
-    ---------
-    Parameters
-    ---------
-    dfs_concat: DataFrame 
-        Indexed by subtree_dict
-        Last column is analytically solved expected number of each quartet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
-        Output from resample_trees functions
-    num_resamples: int
-        number of resamples
-    subtree_dict : dictionary
-        Keys are subtrees, values are integers
-    cutoff: string or NoneType or int
-        Take cutoff number of subtrees with largest absolute z-scores to include in plots
-        If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1
-        If NoneType, take all subtrees
-    num_null: int
-        Take num_null number of resamples to calculate z-scores as part of null distribution
+    Calculates z-scores by comparing the observed count in the original trees to the mean/std across all resamples.
+    Calculates null z-scores by comparing the observed count of `num_null` random resamples to the mean/std across the rest of 
+    the resamples.
+    
+    Args:
+        dfs_concat (DataFrame): Indexed by values from `subtree_dict`.
+            Last column is analytically solved expected number of each subtree.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
+            Output from resample_trees functions.
+        num_resamples (int): Number of resamples.
+        subtree_dict (dict): Keys are subtrees, values are integers.
+        cutoff (string or NoneType or int, optional): Take `cutoff` number of subtrees with largest absolute z-scores 
+            to include in plots.
+            If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
+            If NoneType, take all subtrees.
+        num_null (int, optional): Take `num_null` number of resamples to calculate z-scores as part of null distribution.
+
+    Returns:
+        (tuple): Contains the following DataFrames.
         
-    Output
-    --------
-    df_true_melt_subset: DataFrame
-        DataFrame with cutoff number of most significant subtrees for plotting
-        Sorted by z-score from most over-represented to most under-represented
-        Columns: subtree_val, observed, expected, z-score, abs z-score, label, min, mean, max, counts_adjusted_p_value
-            subtree_val: int
-                val corresponding to subtree_dict
-            observed: int
-                Count in original trees
-            expected: int
-                Analytically solved expected count
-            z-score: int
-                Computed using observed values and mean/std across resamples
-            abs z-score: int
-                absolute value of z-score
-            label: string
-                key corresponding to subtree_dict
-            min: int
-                minimum count across across all resamples
-            mean: int
-                average count across across all resamples
-            max: int
-                maximum count across across all resamples
-            adj_p_val: float
-                adjusted p-value, one-sided test, corrected using the Bonferonni correction
-            z-score min: int
-                minimum z-score across across 100 random resamples
-            z-score mean: int
-                average z-score across across 100 random resamples
-            z-score max: int
-                maximum z-score across across 100 random resamples
-    df_melt_subset: DataFrame 
-        Melted DataFrame with observed count for cutoff number of most significant subtrees (all resamples)
-        Columns: subtree_val, observed, label
-            subtree_val: int
-                val corresponding to subtree_dict
-            observed: int
-                Count in original trees
-            label: string
-                key corresponding to subtree_dict
-    df_melt_100resamples_subset: DataFrame 
-        Melted DataFrame with observed count for cutoff number of most significant subtrees (100 random resamples)
-        Columns: subtree_val, observed, label
-            subtree_val: int
-                val corresponding to subtree_dict
-            observed: int
-                Count in original trees
-            label: string
-                key corresponding to subtree_dict
-    df_zscores_i_concat_melt_subset: DataFrame 
-        Melted DataFrame with null z-score for cutoff number of most significant subtrees (1000 random resamples)
-        Columns: subtree_val, observed, label
-            subtree_val: int
-                val corresponding to subtree_dict
-            observed: int
-                Count in original trees
-            label: string
-                key corresponding to subtree_dict
-    df_zscores_i_concat_melt_100resamples_subset: DataFrame 
-        Melted DataFrame with null z-score for cutoff number of most significant subtrees (100 random resamples)
-        Columns: subtree_val, observed, label
-            subtree_val: int
-                val corresponding to subtree_dict
-            observed: int
-                Count in original trees
-            label: string
-                key corresponding to subtree_dict
-    '''
+        - df_true_melt_subset (DataFrame): DataFrame indexed by `cutoff` number of most significant subtrees for plotting.
+            Sorted by z-score from most over-represented to most under-represented'. Contains the following columns:- 
+                - subtree_val (int): Value corresponding to `subtree_dict`.
+                - observed (float): Count in original trees.
+                - expected (float): Analytically solved expected count.
+                - z-score (float): Computed using observed values and mean/std across resamples.
+                - abs z-score (float): Absolute value of z-score.
+                - label (string): Key corresponding to `subtree_dict`.
+                - min (float): Minimum count across across all resamples.
+                - mean (float): Average count across across all resamples.
+                - max (float): Maximum count across across all resamples.
+                - adj_p_val (float): Adjusted p-value, one-sided test, corrected using the Bonferonni correction.
+                - z-score min (float): Minimum z-score across across `num_null` random resamples.
+                - z-score mean (float): Average z-score across across `num_null` random resamples.
+                - z-score max (float): Maximum z-score across across `num_null` random resamples.
+        - df_melt_subset (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant subtrees 
+            across all resamples. Contains the following columns:
+                - subtree_val (int): Value corresponding to `subtree_dict`.
+                - observed (int): Counts across all resamples.
+                - label (string): Key corresponding to `subtree_dict`.
+        - df_melt_100resamples_subset (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant
+            subtrees across 100 random resamples. Contains the following columns:
+                - subtree_val (int): Value corresponding to `subtree_dict`.
+                - observed (int): Counts across 100 random resamples.
+                - label (string): Key corresponding to `subtree_dict`.
+        - df_zscores_i_concat_melt_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
+            subtrees across `num_null` random resamples. Contains the following columns:
+                - subtree_val (int): Value corresponding to `subtree_dict`.
+                - observed (float): Z-scores across `num_null` random resamples.
+                - label (string): Key corresponding to `subtree_dict`.
+        - df_zscores_i_concat_melt_100resamples_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
+            most significant subtrees across 100 random resamples. Contains the following columns:
+                - subtree_val (int): Value corresponding to `subtree_dict`.
+                - observed (float): Z-scores across 100 random resamples.
+                - label (string): Key corresponding to `subtree_dict`.
+    """
 
     # slice out the triplets of the original trees
     df_true_slice = dfs_concat.loc[:,'observed']
@@ -254,22 +229,18 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
 
 
 def make_cell_color_dict(all_trees_sorted, cell_fates=None):
-    """Make cell color based on cell fates.
+    """Makes cell color dictionary based on provided cell fates.
+    
     If cell_fates not provided, use automatically determined cell fates based on tree dataset.
     
-    Parameters
-    ----------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    cell_fates : list
-        List where each entry is a string representing a cell fate.
-        Automatically determined based on tree dataset if not provided by user.
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        cell_fates (NoneType or list, optional): List where each entry is a string representing a cell fate.
+            If NoneType (i.e. not provided by user), automatically determined based on tree dataset.
     
-    Returns
-    -------
-    cell_color_dict : dictionary
-        Keys are cell fates, values are colors
+    Returns:
+        cell_color_dict (dict): Keys are cell fates, values are colors.
     
     """
     if cell_fates == None:
@@ -308,42 +279,31 @@ def plot_frequency(subtree,
                    dpi=300,
                    image_save_path=None):
     
-    '''
-    Plot frequency of cutoff number of subtrees in original dataset and all resamples
+    """Plots frequency of `cutoff` number of subtrees in original dataset and all resamples.
     
-    ---------
-    Parameters
-    ---------
-    subtree : string
-        type of subtree 
-    df_true_melt_subset : DataFrame
-        DataFrame with cutoff number of most significant subtrees for plotting
-        Sorted by z-score from most over-represented to most under-represented
-        Output from dfs_for_plotting function
-    df_melt_subset : DataFrame 
-        Melted DataFrame with observed count for cutoff number of most significant subtrees (all resamples)
-        Output from dfs_for_plotting function
-    df_melt_100resamples_subset : DataFrame 
-        Melted DataFrame with observed count for cutoff number of most significant subtrees (100 random resamples)
-        Output from dfs_for_plotting function
-    cell_color_dict : dictionary
-        Keys are cell fates, values are colors
-    cutoff : int
-        Take cutoff number of subtrees with largest absolute z-scores to include in plots
-        If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1
-    legend_bool : Boolean
-        Include legend in plot
-    legend_pos : string
-        Position of legend (outside or inside)
-    save : Boolean
-        Save figure as file
-    image format : string
-        Format of image file to be saved (png or svg)
-    dpi : int
-        Resolution of saved image file
-    image_save_path : string
-        Path to saved image file
-    '''
+    Args:
+        subtree (string): Type of subtree.
+        df_true_melt_subset (DataFrame): DataFrame with `cutoff` number of most significant subtrees for plotting.
+            Sorted by z-score from most over-represented to most under-represented.
+            Output from dfs_for_plotting function.
+        df_melt_subset (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant subtrees 
+            across all resamples.
+            Output from dfs_for_plotting function.
+        df_melt_100resamples_subset (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant
+            subtrees across 100 random resamples.
+            Output from dfs_for_plotting function.
+        cell_color_dict (dict): Keys are cell fates, values are colors.
+        cutoff (string or NoneType or int, optional): Take `cutoff` number of subtrees with largest absolute z-scores 
+            to include in plots.
+            If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
+            If NoneType, take all subtrees.
+        legend_bool (bool, optional): Include legend in plot.
+        legend_pos (string, optional): Position of legend (outside or inside).
+        save (bool, optional): If True, save figure as file.
+        image format (string, optional): Format of image file to be saved (png or svg).
+        dpi (int, optional): Resolution of saved image file.
+        image_save_path (string, optional): Path to saved image file.
+    """
 
     df_true_melt_subset_sg = df_true_melt_subset.loc[df_true_melt_subset['adj_p_val']<0.05].copy()
     
@@ -372,7 +332,7 @@ def plot_frequency(subtree,
                   size=0.5,
                  )
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset, color='red', label='Observed count', s=2.5)
-    pyplot.scatter(x='label', y='mean', data=df_true_melt_subset, color='gray', label='Count of resamples', s=2.5)
+    pyplot.scatter(x='label', y='mean', data=df_true_melt_subset, color='gray', label='Count across all resamples', s=2.5)
     pyplot.scatter(x='label', y='expected', data=df_true_melt_subset, color='black', label='Expected count', s=2.5)
     pyplot.scatter(x='label', y='min', data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x='label', y='max', data=df_true_melt_subset, color='gray', s=0, label='')
@@ -538,6 +498,7 @@ def plot_deviation(subtree,
                    df_zscores_i_concat_melt_100resamples_subset, 
                    cell_color_dict,
                    cutoff='auto', 
+                   num_null=1000,
                    legend_bool=True,
                    legend_pos='outside',
                    save=False, 
@@ -545,42 +506,32 @@ def plot_deviation(subtree,
                    dpi=300,
                    image_save_path=None):
     
-    '''
-    Plot frequency of cutoff number of subtrees in original dataset and all resamples
+    """Plots deviation of `cutoff` number of subtrees in original dataset and `num_null` resamples.
     
-    ---------
-    Parameters
-    ---------
-    subtree : string
-        type of subtree 
-    df_true_melt_subset : DataFrame
-        DataFrame with cutoff number of most significant subtrees for plotting
-        Sorted by z-score from most over-represented to most under-represented
-        Output from dfs_for_plotting function
-    df_melt_subset : DataFrame 
-        Melted DataFrame with observed count for cutoff number of most significant subtrees (all resamples)
-        Output from dfs_for_plotting function
-    df_melt_100resamples_subset : DataFrame 
-        Melted DataFrame with observed count for cutoff number of most significant subtrees (100 random resamples)
-        Output from dfs_for_plotting function
-    cell_color_dict : dictionary
-        Keys are cell fates, values are colors
-    cutoff : int
-        Take cutoff number of subtrees with largest absolute z-scores to include in plots
-        If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1
-    legend_bool : Boolean
-        Include legend in plot
-    legend_pos : string
-        Position of legend (outside or inside)
-    save : Boolean
-        Save figure as file
-    image format : string
-        Format of image file to be saved (png or svg)
-    dpi : int
-        Resolution of saved image file
-    image_save_path : string
-        Path to saved image file
-    '''
+    Args:
+        subtree (string): Type of subtree.
+        df_true_melt_subset (DataFrame): DataFrame with cutoff number of most significant subtrees for plotting.
+            Sorted by z-score from most over-represented to most under-represented.
+            Output from dfs_for_plotting function.
+        df_zscores_i_concat_melt_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
+            subtrees across `num_null` random resamples.
+            Output from dfs_for_plotting function.
+        df_zscores_i_concat_melt_100resamples_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
+            most significant subtrees across 100 random resamples.
+            Output from dfs_for_plotting function.
+        cell_color_dict (dict): Keys are cell fates, values are colors.
+        cutoff (string or NoneType or int, optional): Take `cutoff` number of subtrees with largest absolute z-scores 
+            to include in plots.
+            If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
+            If NoneType, take all subtrees.
+        num_null (int, optional): Number of resamples used to calculate z-scores as part of null distribution.    
+        legend_bool (bool, optional): Include legend in plot.
+        legend_pos (string, optional): Position of legend (outside or inside).
+        save (bool, optional): If True, save figure as file.
+        image format (string, optional): Format of image file to be saved (png or svg).
+        dpi (int, optional): Resolution of saved image file.
+        image_save_path (string, optional): Path to saved image file.
+    """
 
     df_true_melt_subset_sg = df_true_melt_subset.loc[df_true_melt_subset['adj_p_val']<0.05].copy()
     
@@ -610,7 +561,7 @@ def plot_deviation(subtree,
                  )
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='Observed count', s=2.5)
     pyplot.scatter(x="label", y="z-score mean", data=df_true_melt_subset, color='gray', label='Resampled datasets', s=2.5)
-    pyplot.scatter(x="label", y="z-score mean", data=df_true_melt_subset, color='black', label='Average across resamples', s=2.5)
+    pyplot.scatter(x="label", y="z-score mean", data=df_true_melt_subset, color='black', label=f'Average across {num_null} resamples', s=2.5)
     pyplot.scatter(x="label", y="z-score min", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="z-score max", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='', s=2.5)

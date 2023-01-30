@@ -1,3 +1,15 @@
+"""
+## lma.resample
+Provides functions for resampling tree datasets.
+
+This module contains the following functions:
+
+- `read_dataset` - Returns sorted tree dataset.
+- `make_dicts` - Returns tuple containing quartet, triplet, doublet, and cell dictionaries.
+- `resample_trees_doublets` - Returns DataFrame containing number of **doublets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_triplets` - Returns DataFrame containing number of **triplets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_quartets` - Returns DataFrame containing number of **quartets** across all resamples, the original trees, and the expected number (solved analytically).
+"""
 # +
 # packages for both resampling and plotting
 import numpy as np
@@ -13,20 +25,14 @@ from collections import Counter
 
 # +
 def _sorted_doublets(tree):
-    '''
-    Sorts the doublets so that it is in alphabetical order (important for assigning doublet index)
-    ---------
-    Parameters
-    ----------
-    tree: string
-        tree in NEWICK format
+    """Sorts the doublets into alphabetical order (important for assigning doublet index).
     
-    --------
-    Outputs
-    --------
-    tree: string
-        new tree in NEWICK format after sorted doublets alphabetically
-    '''
+    Args:
+        tree (string): Tree in NEWICK format.
+    
+    Returns:
+        tree (string): New tree in NEWICK format after sorted doublets alphabetically.
+    """
     for i in re.findall("\(\w*,\w*\)", tree):
         i_escape = re.escape(i)
         i_split = re.split('[\(\),]', i)
@@ -35,21 +41,16 @@ def _sorted_doublets(tree):
     return tree
 
 def _align_triplets(tree):
-    '''
-    Aligns triplets so that all of them are in the order of (outgroup, ingroup
-    Find all Pattern 2 ((x,x),x) triplets, then replace them with the same triplet but in Pattern 1 (x,(x,x)) form
-    ---------
-    Parameters
-    ----------
-    tree: string
-        tree in NEWICK format
+    """Aligns triplets so that all of them are in the order of (outgroup, ingroup).
     
-    --------
-    Outputs
-    --------
-    tree: string
-        new tree in NEWICK format after aligned triplets
-    '''
+    Find all ((x,x),x) triplets, then replace them with the same triplet but in (x,(x,x)) form.
+    
+    Args:
+        tree (string): Tree in NEWICK format.
+    
+    Returns:
+        tree (string): New tree in NEWICK format after aligned triplets.
+    """
     for i in re.findall("\(\(\w*,\w*\),\w*\)", tree):
         j = re.findall("\w*", i)
         i_escape = re.escape(i)
@@ -57,21 +58,16 @@ def _align_triplets(tree):
     return tree
 
 def _sorted_quartets(tree):
-    '''
-    Sorts the quartets so that it is in alphabetical order (important for assigning doublet index)
-    Tree should have doublets sorted already
-    ---------
-    Parameters
-    ----------
-    tree: string
-        tree in NEWICK format
+    """Sorts the quartets so that it is in alphabetical order (important for assigning doublet index).
     
-    --------
-    Outputs
-    --------
-    tree: string
-        new tree in NEWICK format after sorted quartets alphabetically
-    '''
+    Tree should have doublets sorted already.
+    
+    Args:
+        tree (string): Tree in NEWICK format.
+    
+    Returns:
+        tree (string): New tree in NEWICK format after sorted quartets alphabetically.
+    """
     for i in re.findall("\(\(\w*,\w*\),\(\w*,\w*\)\)", tree):
         i_escape = re.escape(i)
         k = sorted([i[1:6], i[7:12]])
@@ -83,19 +79,15 @@ def _sorted_quartets(tree):
 # -
 
 def read_dataset(path):
-    """Read dataset txt file.
+    """Reads dataset txt file located at `path`.
     
-    Parameters
-    ----------
-    path : string
-        Path to txt file of dataset. txt file should be formatted as NEWICK trees 
-        separated with semi-colons and no spaces
+    Args:
+        path (string): Path to txt file of dataset. txt file should be formatted as NEWICK trees 
+            separated with semi-colons and no spaces.
     
-    Returns
-    -------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
+    Returns:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
     """
     with open(path) as f:
         lines = f.readlines()
@@ -107,17 +99,14 @@ def read_dataset(path):
 
 # +
 def _make_cell_dict(cell_fates):
-    '''Make a dictionary of all possible cell fates.
+    """Makes a dictionary of all possible cell fates.
     
-    ---------
-    Parameters
-    ---------
-    cell_fates: list with each entry as a cell fate
+    Args:
+        cell_fates (list): List with each entry as a cell fate.
     
-    ---------
-    Outputs
-    ---------
-    cell_dict: dict with each cell type as an key, value is int'''
+    Returns:
+        cell_dict (dict): Keys are cell types, values are integers.
+    """
     
     cell_dict = {}
     for i, j in enumerate(cell_fates):
@@ -126,17 +115,14 @@ def _make_cell_dict(cell_fates):
     return cell_dict
 
 def _make_doublet_dict(cell_fates):
-    '''Make a dictionary of all possible doublets.
+    """Makes a dictionary of all possible doublets.
     
-    ---------
-    Parameters
-    ---------
-    cell_fates: list with each entry as a cell fate
-    
-    ---------
-    Outputs
-    ---------
-    doublet_dict: dict with each doublet as an key, value is int'''
+    Args:
+        cell_fates (list): List with each entry as a cell fate.
+        
+    Returns:
+        doublet_dict (dict): Keys are doublets, values are integers.
+    """
 
     total = '0123456789'
     doublet_combinations = []
@@ -152,18 +138,14 @@ def _make_doublet_dict(cell_fates):
     return doublet_dict
 
 def _make_triplet_dict(cell_fates):
-    '''
-    Make a dictionary of all possible triplets.
+    """Makes a dictionary of all possible triplets.
     
-    ---------
-    Parameters
-    ---------
-    cell_fates: list with each entry as a cell fate
+    Args:
+        cell_fates (list): List with each entry as a cell fate.
     
-    ---------
-    Outputs
-    ---------
-    triplet_dict: dict with each triplet as an key, value is int'''
+    Returns:
+        triplet_dict (dict): Keys are triplets, values are integers.
+    """
 
     total = '0123456789'
     triplet_combinations = []
@@ -180,18 +162,14 @@ def _make_triplet_dict(cell_fates):
     return triplet_dict
 
 def _make_quartet_dict(cell_fates):
-    '''
-    Make a dictionary of all possible quartets.
+    """Makes a dictionary of all possible quartets.
     
-    ---------
-    Parameters
-    ---------
-    cell_fates: list with each entry as a cell fate
+    Args:
+        cell_fates (list): List with each entry as a cell fate.
     
-    ---------
-    Outputs
-    ---------
-    quartet_dict: dict with each quartet as an key, value is int'''
+    Returns:
+        quartet_dict (dict): Keys are quartets, values are integers.
+    """
 
     doublet_dict = _make_doublet_dict(cell_fates)
     z = [sorted([i, j]) for i in list(doublet_dict.keys()) for j in list(doublet_dict.keys())]
@@ -211,40 +189,24 @@ def _make_quartet_dict(cell_fates):
 
 # -
 
-def make_dicts(all_trees_sorted, subtree, cell_fates=None):
-    """Make subtree and cell dictionaries based on cell fates.
-    If cell_fates not provided, use automatically determined cell fates based on tree dataset.
+def make_dicts(all_trees_sorted, cell_fates=None):
+    """Makes subtree and cell dictionaries based on cell fates.
     
-    Parameters
-    ----------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    subtree: string
-        Type of subtree to be analyzed
-    cell_fates : list
-        List where each entry is a string representing a cell fate.
-        Automatically determined based on tree dataset if not provided by user.
+    If `cell_fates` not provided, use automatically determined cell fates based on tree dataset.
     
-    Returns
-    -------
-    if subtree == 'doublet':
-        doublet_dict : dictionary
-            Keys are doublets, values are integers
-        cell_dict : dictionary
-            Keys are cell types, values are integers
-    elif subtree == 'triplet':
-        triplet_dict : dictionary
-            Keys are triplets, values are integers
-        doublet_dict : dictionary
-            Keys are doublets, values are integers
-        cell_dict : dictionary
-            Keys are cell types, values are integers
-    elif subtree == 'doublet':
-        quartet_dict : dictionary
-            Keys are quartets, values are integers
-        doublet_dict : dictionary
-            Keys are doublets, values are integers
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        cell_fates (NoneType or list, optional): List where each entry is a string representing a cell fate.
+            If NoneType (i.e. not provided by user), automatically determined based on tree dataset.
+    
+    Returns:
+        (tuple): Contains the following dictionaries.
+        
+        - quartet_dict (dict): Keys are quartets, values are integers.
+        - triplet_dict (dict): Keys are triplets, values are integers.
+        - doublet_dict (dict): Keys are doublets, values are integers.
+        - cell_dict (dict): Keys are cell types, values are integers.
     
     """
     if cell_fates == None:
@@ -252,40 +214,25 @@ def make_dicts(all_trees_sorted, subtree, cell_fates=None):
     
     if len(cell_fates)>10:
         print('warning!')
-    
-    if subtree == 'doublet':
-        doublet_dict = _make_doublet_dict(cell_fates)
-        cell_dict = _make_cell_dict(cell_fates)
-        return doublet_dict, cell_dict
-    elif subtree == 'triplet':
-        triplet_dict = _make_triplet_dict(cell_fates)
-        doublet_dict = _make_doublet_dict(cell_fates)
-        cell_dict = _make_cell_dict(cell_fates)
-        return triplet_dict, doublet_dict, cell_dict
-    elif subtree == 'quartet':
-        quartet_dict = _make_quartet_dict(cell_fates)
-        doublet_dict = _make_doublet_dict(cell_fates)
-        return quartet_dict, doublet_dict
+        
+    quartet_dict = _make_quartet_dict(cell_fates)
+    triplet_dict = _make_triplet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
+    return (quartet_dict, triplet_dict, doublet_dict, cell_dict)
 
 
 # returns relavent subtrees
 def _flatten_doublets(all_trees_sorted):
-    '''
-    Make a list of all doublets in set of trees.
+    """Makes a list of all doublets in set of trees.
     
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
     
-    ---------
-    Outputs
-    ---------
-    doublets : list 
-        List with each entry as a doublet (string)
-    '''
+    Returns:
+        doublets (list): List with each entry as a doublet (string).
+    """
     doublets = []
     for i in all_trees_sorted:
         doublets.extend(re.findall("\(\w*,\w*\)", i))
@@ -293,22 +240,15 @@ def _flatten_doublets(all_trees_sorted):
 
 
 def _flatten_all_cells(all_trees_sorted):
-    '''
-    Make a list of all cells in the set of trees.
+    """Makes a list of all cells in the set of trees.
     
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
     
-    ---------
-    Outputs
-    ---------
-    all_cells : list 
-        List with each entry as a cell (string)
-    '''
+    Returns:
+        all_cells (list): List with each entry as a cell (string).
+    """
     
     all_cells = []
     for i in all_trees_sorted:
@@ -317,27 +257,19 @@ def _flatten_all_cells(all_trees_sorted):
     return all_cells
 
 
-def _make_df_doublets(all_trees_sorted, doublet_dict, resample, labels_bool):
-    '''
-    Make a DataFrame of all doublets in the set of trees
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
-    resample: int
-        Resample number
-    labels_bool: boolean
-        if True, then index of resulting DataFrame uses doublet_dict keys
-    ---------
-    Outputs
-    ---------
-    df_doublets: DataFrame
-        Rows are doublets, column is resample number
-    '''
+def _make_df_doublets(all_trees_sorted, doublet_dict, resample, labels_bool=False):
+    """Makes a DataFrame of all doublets in the set of trees provided.
+    
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        doublet_dict (dict): Keys are doublets, values are integers.
+        resample (int): Resample number.
+        labels_bool (bool, optional): If True, then index of resulting DataFrame uses `doublet_dict` keys.
+            
+    Returns:
+        df_doublets (DataFrame): Rows are doublets, column is resample number.
+    """
     doublets = _flatten_doublets(all_trees_sorted)
     doublets_resample_index = [doublet_dict[i] for i in doublets]
     df_doublets = pd.DataFrame.from_dict(Counter(doublets_resample_index), orient='index', columns=[f"{resample}"])
@@ -346,27 +278,19 @@ def _make_df_doublets(all_trees_sorted, doublet_dict, resample, labels_bool):
     return df_doublets
 
 
-def _make_df_all_cells(all_trees_sorted, cell_dict, resample, labels_bool):
-    '''
-    Make a DataFrame of all cells in the set of trees
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    cell_dict : dictionary
-        Keys are cell types, values are integers
-    resample: int
-        Resample number
-    labels_bool: boolean
-        if True, then index of resulting DataFrame uses doublet_dict keys
-    ---------
-    Outputs
-    ---------
-    df_doublets: DataFrame
-        Rows are cell types, column is resample number
-    '''
+def _make_df_all_cells(all_trees_sorted, cell_dict, resample, labels_bool=False):
+    """Makes a DataFrame of all cells in the set of trees.
+    
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        cell_dict (dict): Keys are cell types, values are integers.
+        resample (int): Resample number.
+        labels_bool (bool, optional): If True, then index of resulting DataFrame uses `doublet_dict` keys.
+            
+    Returns:
+        df_doublets (DataFrame): Rows are cell types, column is resample number.
+    """
     all_cells = _flatten_all_cells(all_trees_sorted)
     all_cells_resample_index = [cell_dict[i] for i in all_cells]
     df_all_cells = pd.DataFrame.from_dict(Counter(all_cells_resample_index), orient='index', columns=[f"{resample}"])
@@ -377,26 +301,17 @@ def _make_df_all_cells(all_trees_sorted, cell_dict, resample, labels_bool):
 
 # Replace all leaves drawing from repl_list
 def _replace_all(tree, repl_list, replacement_bool):
-    '''
-    Replace all cells in tree with a cell drawing from repl_list.
+    """Replaces all cells in tree with a cell drawing from `repl_list`.
     
-    ---------
-    Parameters
-    ---------
-    tree: string
-        NEWICK format
-    repl_list: list 
-        List of all cells
-    replacement_bool: boolean
-        Draw with or without replacement from repl_list
+    Args:
+        tree (string): Tree in NEWICK format.
+        repl_list (list): List of all cells.
+        replacement_bool (bool): Draw with or without replacement from `repl_list`.
     
-    ---------
-    Outputs
-    ---------
-    new_tree_sorted: string
-        NEWICK format
-        Tree is sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    '''
+    Returns:
+        new_tree_sorted (string): tree in NEWICK format.
+            Tree is sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+    """
     if replacement_bool==False:
         def repl_all(var):
             return repl_list.pop()
@@ -409,37 +324,26 @@ def _replace_all(tree, repl_list, replacement_bool):
 
 
 def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, doublet_dict, cell_dict, df_all_cells_true):
-    '''
-    Arranges observed counts for each doublet in all resamples and original trees into a DataFrame
-    Last column is analytically solved expected number of each doublet
+    """Arranges observed counts for each doublet in all resamples and original trees into a combined DataFrame.
+    
+    Last column is analytically solved expected number of each doublet.
         
-    ---------
-    Parameters
-    ---------
-    df_doublet_true: DataFrame 
-        DataFrame with number of each doublet in original trees, indexed by doublet_dict
-    dfs_doublet_new: list
-        list with each entry as DataFrame of number of each doublet in each set 
-        of resampled trees, indexed by doublet_dict
-    num_resamples: int
-        Number of resample datasets
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
-    cell_dict : dictionary
-        Keys are cell types, values are integers
-    df_all_cells_true: DataFrame
-        DataFrame with number of each cell fate in original trees, indexed by cell_dict
+    Args:
+        df_doublet_true (DataFrame): DataFrame with number of each doublet in original trees, indexed by `doublet_dict`.
+        dfs_doublet_new (list): List with each entry as DataFrame of number of each doublet in each set
+            of resampled trees, indexed by doublet_dict.
+        num_resamples (int): Number of resample datasets.
+        doublet_dict (dict): Keys are doublets, values are integers.
+        cell_dict (dict): Keys are cell types, values are integers.
+        df_all_cells_true (DataFrame): DataFrame with number of each cell fate in original trees, indexed by `cell_dict`.
     
-    -------
-    Output
-    -------
-    dfs_concat: DataFrame 
-        Indexed by doublet_dict
-        Last column is analytically solved expected number of each doublet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
+    Returns:
+        dfs_concat (DataFrame): Indexed by values from `doublet_dict`.
+            Last column is analytically solved expected number of each doublet.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
     
-    '''
+    """
     
     dfs_list = [dfs_doublet_new[i] for i in range(num_resamples)] + [df_doublet_true]
     dfs_concat = pd.concat(dfs_list, axis=1, sort=False)
@@ -492,39 +396,27 @@ def resample_trees_doublets(all_trees_sorted,
                             replacement_bool, 
                             doublet_dict,
                             cell_dict):
-    '''
-    Input is a set of trees and desired number of resamples.
-    Function performs resampling of tree, drawing with or without replacement.
-    Resampling is done by replacing each cell fate with a cell fate from the set of trees.
-    Returns observed number of each doublet across all trees in each resample and the original trees,
-    as well as the analytically solved expected number of each doublet
+    """Performs resampling of trees, drawing with or without replacement, returning number of doublets across all resamples, 
+       the original trees, and the expected number (solved analytically).
     
-    ----------
-    Parameters
-    ----------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    num_resamples: int
-        Number of resample datasets
-    replacement_bool: boolean
-        Sample cells with or without replacement drawing from the pool of all cells
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
-    cell_dict : dictionary
-        Keys are cell types, values are integers
+    Resampling is done by replacing each cell fate with a randomly chosen cell fate across all trees.
     
-    ----------
-    Outputs
-    ----------
-    dfs_concat: DataFrame 
-        Indexed by doublet_dict
-        Last column is analytically solved expected number of each doublet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        num_resamples (int): Number of resample datasets.
+        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        doublet_dict (dict): Keys are doublets, values are integers.
+        cell_dict (dict): Keys are cell types, values are integers.
+    
+    Returns:
+        dfs_concat (DataFrame): Indexed by values from `doublet_dict`.
+            Last column is analytically solved expected number of each doublet.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
 
 
-    '''
+    """
     # store result for each rearrangement in dfs list
     dfs_doublets_new = []
     df_doublets_true = _make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
@@ -549,22 +441,15 @@ def resample_trees_doublets(all_trees_sorted,
 
 # returns relavent subtrees
 def _flatten_triplets(all_trees_sorted):
-    '''
-    Make a list of all triplets in set of trees.
+    """Makes a list of all triplets in set of trees.
     
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
     
-    ---------
-    Outputs
-    ---------
-    triplets : list 
-        List with each entry as a triplet (string)
-    '''
+    Returns:
+        triplets (list): List with each entry as a triplet (string).
+    """
     triplets = []
     for i in all_trees_sorted:
         triplets.extend(re.findall("\(\w*,\(\w*,\w*\)\)", i))
@@ -572,21 +457,14 @@ def _flatten_triplets(all_trees_sorted):
 
 
 def _replace_doublets_blank(tree):
-    '''
-    Erase all doublets in tree.
+    """Erases all doublets in tree.
     
-    ---------
-    Parameters
-    ---------
-    tree: string
-        NEWICK format
+    Args:
+        tree (string): tree in NEWICK format.
     
-    ---------
-    Outputs
-    ---------
-    new_tree: string
-        NEWICK format, no doublets
-    '''
+    Returns:
+        new_tree (string): tree in NEWICK format without doublets.
+    """
     def repl_doublets_blank(var):
         return ''
     new_tree = re.sub("\(\w*,\w*\)", repl_doublets_blank, tree)
@@ -595,22 +473,15 @@ def _replace_doublets_blank(tree):
 
 # returns relavent subtrees
 def _flatten_singlets(all_trees_sorted):
-    '''
-    Returns all singlets (non-doublets) in list of trees.
+    """Returns all singlets (non-doublets) in list of trees.
     
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
     
-    ---------
-    Outputs
-    ---------
-    singlets : list 
-        List with each entry as a singlet (string)
-    '''
+    Returns:
+        singlets (list): List with each entry as a singlet (string).
+    """
     x_doublets = [_replace_doublets_blank(i) for i in all_trees_sorted]
     singlets = []
     for i in x_doublets:
@@ -619,27 +490,19 @@ def _flatten_singlets(all_trees_sorted):
     return singlets
 
 
-def _make_df_triplets(all_trees_sorted, triplet_dict, resample, labels_bool):
-    '''
-    Make a DataFrame of all triplets in the set of trees
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    triplet_dict : dictionary
-        Keys are triplets, values are integers
-    resample: int
-        Resample number
-    labels_bool: boolean
-        if True, then index of resulting DataFrame uses triplet_dict keys
-    ---------
-    Outputs
-    ---------
-    df_triplets: DataFrame
-        Rows are triplets, column is resample number
-    '''
+def _make_df_triplets(all_trees_sorted, triplet_dict, resample, labels_bool=False):
+    """Makes a DataFrame of all triplets in the set of trees.
+    
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        triplet_dict (dict): Keys are triplets, values are integers.
+        resample (int): Resample number.
+        labels_bool (bool, optional): if True, then index of resulting DataFrame uses `triplet_dict` keys.
+            
+    Returns:
+        df_triplets (DataFrame): Rows are triplets, column is resample number.
+    """
     triplets = _flatten_triplets(all_trees_sorted)
     triplets_resample_index = [triplet_dict[i] for i in triplets]
     df_triplets = pd.DataFrame.from_dict(Counter(triplets_resample_index), orient='index', columns=[f"{resample}"])
@@ -648,27 +511,19 @@ def _make_df_triplets(all_trees_sorted, triplet_dict, resample, labels_bool):
     return df_triplets
 
 
-def _make_df_singlets(all_trees_sorted, cell_dict, resample, labels_bool):
-    '''
-    Make a DataFrame of all singlets in the set of trees
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    cell_dict : dictionary
-        Keys are cell types, values are integers
-    resample: int
-        Resample number
-    labels_bool: boolean
-        if True, then index of resulting DataFrame uses cell_dict keys
-    ---------
-    Outputs
-    ---------
-    df_singlets: DataFrame
-        Rows are singlets, column is resample number
-    '''
+def _make_df_singlets(all_trees_sorted, cell_dict, resample, labels_bool=False):
+    """Makes a DataFrame of all singlets in the set of trees.
+    
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        cell_dict (dict): Keys are cell types, values are integers.
+        resample (int): Resample number.
+        labels_bool (bool, optional): If True, then index of resulting DataFrame uses `cell_dict` keys.
+    
+    Returns:
+        df_singlets (DataFrame): Rows are singlets, column is resample number.
+    """
     singlets = _flatten_singlets(all_trees_sorted)
     singlets_resample_index = [cell_dict[i] for i in singlets]
     df_singlets = pd.DataFrame.from_dict(Counter(singlets_resample_index), orient='index', columns=[f"{resample}"])
@@ -678,21 +533,14 @@ def _make_df_singlets(all_trees_sorted, cell_dict, resample, labels_bool):
 
 
 def _replace_doublets_symbol(tree):
-    '''
-    Replace all doublets in tree with "?".
+    """Replaces all doublets in tree with "?".
     
-    ---------
-    Parameters
-    ---------
-    tree: string
-        NEWICK format
+    Args:
+        tree (string): Tree in NEWICK format.
     
-    ---------
-    Outputs
-    ---------
-    new_tree: string
-        NEWICK format, doublets replaced with "?"
-    '''
+    Returns:
+        new_tree (string): Tree in NEWICK format, doublets replaced with "?".
+    """
     def repl_doublets_symbol(var):
         return '?'
     new_tree = re.sub("\(\w*,\w*\)", repl_doublets_symbol, tree)
@@ -701,25 +549,16 @@ def _replace_doublets_symbol(tree):
 
 # Replace doublets drawing from doublets_true
 def _replace_symbols(tree, doublets, replacement_bool):
-    '''
-    Replace all "?" in tree with a doublet drawing from doublets.
+    """Replaces all "?" in tree with a doublet drawing from `doublets`.
     
-    ---------
-    Parameters
-    ---------
-    tree: string
-        NEWICK format
-    doublets : list 
-        List with each entry as a doublet (string)
-    replacement_bool: boolean
-        Draw with or without replacement from doublets
+    Args:
+        tree (string): Tree in NEWICK format.
+        doublets (list): List with each entry as a doublet (string).
+        replacement_bool (bool): Draw with or without replacement from `doublets`.
     
-    ---------
-    Outputs
-    ---------
-    tree: string
-        NEWICK format, "?" replaced with doublet
-    '''
+    Returns:
+        tree (string): Tree in NEWICK format, "?" replaced with doublet.
+    """
     if replacement_bool==False:
         def repl_symbols(var):
             return doublets.pop()
@@ -731,41 +570,28 @@ def _replace_symbols(tree, doublets, replacement_bool):
 
 
 def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, triplet_dict, doublet_dict, cell_dict, df_doublets_true, df_singlets_true):
-    '''
-    Arranges observed counts for each triplet in all resamples and original trees into a DataFrame
-    Last column is analytically solved expected number of each triplet
+    """Arranges observed counts for each triplet in all resamples and original trees into a combined DataFrame.
+    
+    Last column is analytically solved expected number of each triplet.
         
-    ---------
-    Parameters
-    ---------
-    df_triplet_true: DataFrame 
-        DataFrame with number of each triplet in original trees, indexed by triplet_dict
-    dfs_triplet_new: list
-        list with each entry as DataFrame of number of each triplet in each set 
-        of resampled trees, indexed by triplet_dict
-    num_resamples: int
-        Number of resample datasets
-    triplet_dict : dictionary
-        Keys are triplets, values are integers
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
-    cell_dict : dictionary
-        Keys are cell types, values are integers
-    df_doublets_true: DataFrame
-        DataFrame with number of each doublet in original trees, indexed by doublet_dict
-    df_singlets_true: DataFrame
-        DataFrame with number of each cell fate in original trees, indexed by cell_dict
+    Args:
+        df_triplet_true (DataFrame): DataFrame with number of each triplet in original trees, indexed by `triplet_dict`.
+        dfs_triplet_new (list): List with each entry as DataFrame of number of each triplet in each set 
+            of resampled trees, indexed by `triplet_dict`.
+        num_resamples (int): Number of resample datasets.
+        triplet_dict (dict): Keys are triplets, values are integers.
+        doublet_dict (dict): Keys are doublets, values are integers.
+        cell_dict (dict): Keys are cell types, values are integers.
+        df_doublets_true (DataFrame): DataFrame with number of each doublet in original trees, indexed by `doublet_dict`.
+        df_singlets_true (DataFrame): DataFrame with number of each cell fate in original trees, indexed by `cell_dict`.
     
-    -------
-    Output
-    -------
-    dfs_concat: DataFrame 
-        Indexed by triplet_dict
-        Last column is analytically solved expected number of each triplet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
+    Returns:
+        dfs_concat (DataFrame): Indexed by values from `triplet_dict`.
+            Last column is analytically solved expected number of each triplet.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
     
-    '''
+    """
     
     dfs_list = [dfs_triplets_new[i] for i in range(num_resamples)] + [df_triplets_true]
     dfs_concat = pd.concat(dfs_list, axis=1, sort=False)
@@ -825,41 +651,27 @@ def resample_trees_triplets(all_trees_sorted,
                             triplet_dict,
                             doublet_dict,
                             cell_dict):
-    '''
-    Input is a set of trees and desired number of resamples.
-    Function performs resampling of tree, drawing with or without replacement.
-    Resampling is done via (1) replacing each cell by any singlet in all trees and
-    (2) replacing each doublet by any doublet in all trees.
-    Returns observed number of each triplet across all trees in each resample and the original trees,
-    as well as the analytically solved expected number of each triplet
+    """Performs resampling of tree, drawing with or without replacement, returning number of triplets across all resamples, 
+       the original trees, and the expected number (solved analytically).
     
-    ----------
-    Parameters
-    ----------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    num_resamples: int
-        Number of resample datasets
-    replacement_bool: boolean
-        Sample cells with or without replacement drawing from the pool of all cells
-    triplet_dict : dictionary
-        Keys are triplets, values are integers
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
-    cell_dict : dictionary
-        Keys are cell types, values are integers
+    Resampling is done via (1) replacing each cell with a randomly chosen singlet across all trees and 
+    (2) replacing each doublet with a randomly chosen doublet across all trees.
     
-    ----------
-    Outputs
-    ----------
-        Indexed by triplet_dict
-        Last column is analytically solved expected number of each triplet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
-
-
-    '''
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        num_resamples (int): Number of resample datasets.
+        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        triplet_dict (dict): Keys are triplets, values are integers.
+        doublet_dict (dict): Keys are doublets, values are integers.
+        cell_dict (dict): Keys are cell types, values are integers.
+    
+    Returns:
+        dfs_concat (DataFrame): Indexed by values from `triplet_dict`.
+            Last column is analytically solved expected number of each triplet.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
+    """
     # store result for each rearrangement in dfs list
     dfs_triplets_new = []
     df_triplets_true = _make_df_triplets(all_trees_sorted, triplet_dict, 'observed', False)
@@ -892,49 +704,34 @@ def resample_trees_triplets(all_trees_sorted,
 
 # returns relavent subtrees
 def _flatten_quartets(all_trees):
-    '''
-    Make a list of all quartets in set of trees.
+    """Makes a list of all quartets in set of trees.
     
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
     
-    ---------
-    Outputs
-    ---------
-    quartets : list 
-        List with each entry as a quartet (string)
-    '''
+    Returns:
+        quartets (list): List with each entry as a quartet (string).
+    """
     quartets = []
     for i in all_trees:
         quartets.extend(re.findall("\(\(\w,\w\),\(\w,\w\)\)", i))
     return quartets
 
 
-def _make_df_quartets(all_trees_sorted, quartet_dict, resample, labels_bool):
-    '''
-    Make a DataFrame of all quartets in the set of trees
-    ---------
-    Parameters
-    ---------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    quartet_dict : dictionary
-        Keys are quartets, values are integers
-    resample: int
-        Resample number
-    labels_bool: boolean
-        if True, then index of resulting DataFrame uses quartet_dict keys
-    ---------
-    Outputs
-    ---------
-    df_quartets: DataFrame
-        Rows are quartets, column is resample number
-    '''
+def _make_df_quartets(all_trees_sorted, quartet_dict, resample, labels_bool=False):
+    """Makes a DataFrame of all quartets in the set of trees.
+    
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        quartet_dict (dict): Keys are quartets, values are integers.
+        resample (int): Resample number.
+        labels_bool (bool, optional): if True, then index of resulting DataFrame uses `quartet_dict` keys.
+    
+    Returns:
+        df_quartets (DataFrame): Rows are quartets, column is resample number.
+    """
     quartets = _flatten_quartets(all_trees_sorted)
     quartets_resample_index = [quartet_dict[i] for i in quartets]
     df_quartets = pd.DataFrame.from_dict(Counter(quartets_resample_index), orient='index', columns=[f"{resample}"])
@@ -945,25 +742,17 @@ def _make_df_quartets(all_trees_sorted, quartet_dict, resample, labels_bool):
 
 # Replace doublets drawing from doublets_true
 def _replace_doublets(tree, doublets_true, replacement_bool):
-    '''
-    Replace all doublets in tree with a new doublet drawing from doublets_true.
+    """Replaces all doublets in tree with a new doublet drawing from `doublets_true`.
     
-    ---------
-    Parameters
-    ---------
-    tree: string
-        NEWICK format
-    doublets_true : list 
-        List with each entry as a doublet (string)
-    replacement_bool: boolean
-        Draw with or without replacement from doublets_true
+    Args:
+        tree (string): Tree in NEWICK format.
+        doublets_true (list): List with each entry as a doublet (string).
+        replacement_bool (bool): Draw with or without replacement from `doublets_true`.
     
-    ---------
-    Outputs
-    ---------
-    new_tree_sorted_quartet: string
-        NEWICK format, doublets replaced with new doublets
-    '''
+    Returns:
+        new_tree_sorted_quartet (string): Tree in NEWICK format, doublets replaced with new doublets, 
+            and all doublets/quartets in alphabetical order.
+    """
     if replacement_bool==False:
         def repl_doublet(var):
             return doublets_true.pop()
@@ -976,37 +765,26 @@ def _replace_doublets(tree, doublets_true, replacement_bool):
 
 
 def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quartet_dict, doublet_dict, df_doublets_true):
-    '''
-    Arranges observed counts for each quartet in all resamples and original trees into a DataFrame
-    Last column is analytically solved expected number of each quartet
+    """Arranges observed counts for each quartet in all resamples and original trees into a combined DataFrame.
+    
+    Last column is analytically solved expected number of each quartet.
         
-    ---------
-    Parameters
-    ---------
-    df_quartet_true: DataFrame 
-        DataFrame with number of each quartet in original trees, indexed by quartet_dict
-    dfs_quartet_new: list
-        list with each entry as DataFrame of number of each quartet in each set 
-        of resampled trees, indexed by quartet_dict
-    num_resamples: int
-        Number of resample datasets
-    quartet_dict : dictionary
-        Keys are quartets, values are integers
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
-    df_doublets_true: DataFrame
-        DataFrame with number of each doublet in original trees, indexed by doublet_dict
+    Args:
+        df_quartet_true (DataFrame): DataFrame with number of each quartet in original trees, indexed by `quartet_dict`.
+        dfs_quartet_new (list): List with each entry as DataFrame of number of each quartet in each set 
+            of resampled trees, indexed by `quartet_dict`.
+        num_resamples (int): Number of resample datasets.
+        quartet_dict (dict): Keys are quartets, values are integers.
+        doublet_dict (dict): Keys are doublets, values are integers.
+        df_doublets_true (DataFrame): DataFrame with number of each doublet in original trees, indexed by `doublet_dict`.
     
-    -------
-    Output
-    -------
-    dfs_concat: DataFrame 
-        Indexed by quartet_dict
-        Last column is analytically solved expected number of each quartet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
+    Returns:
+        dfs_concat (DataFrame): Indexed by values from `quartet_dict`.
+            Last column is analytically solved expected number of each quartet.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
     
-    '''
+    """
     
     dfs_list = [dfs_quartets_new[i] for i in range(num_resamples)] + [df_quartets_true]
     dfs_concat = pd.concat(dfs_list, axis=1, sort=False)
@@ -1058,39 +836,27 @@ def resample_trees_quartets(all_trees_sorted,
                             replacement_bool, 
                             quartet_dict,
                             doublet_dict):
-    '''
-    Input is a set of trees and desired number of resamples.
-    Function performs resampling of tree, drawing with or without replacement.
-    Resampling is done via replacing each doublet with a new doublet from the set of doublets from all trees.
-    Returns observed number of each quartet across all trees in each resample and the original trees,
-    as well as the analytically solved expected number of each quartet
+    """Performs resampling of tree, drawing with or without replacement, returning number of quartets across all
+    resamples, the original trees, and the expected number (solved analytically).
     
-    ----------
-    Parameters
-    ----------
-    all_trees_sorted : list
-        List where each entry is a string representing a tree in NEWICK format. 
-        Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order
-    num_resamples: int
-        Number of resample datasets
-    replacement_bool: boolean
-        Sample cells with or without replacement drawing from the pool of all cells
-    quartet_dict : dictionary
-        Keys are quartets, values are integers
-    doublet_dict : dictionary
-        Keys are doublets, values are integers
+    Resampling is done via replacing each doublet with a randomly chosen doublet from across all trees.
     
-    ----------
-    Outputs
-    ----------
-    dfs_concat: DataFrame 
-        Indexed by quartet_dict
-        Last column is analytically solved expected number of each quartet
-        Second to last column is observed number of occurences in the original dataset
-        Rest of columns are the observed number of occurences in the resampled sets
+    Args:
+        all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
+            Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
+        num_resamples (int): Number of resample datasets.
+        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        quartet_dict (dict): Keys are quartets, values are integers.
+        doublet_dict (dict): Keys are doublets, values are integers.
+    
+    Returns:
+        dfs_concat (DataFrame): Indexed by values from `quartet_dict`.
+            Last column is analytically solved expected number of each quartet.
+            Second to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
 
 
-    '''
+    """
     # store result for each rearrangement in dfs list
     dfs_quartets_new = []
     df_quartets_true = _make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
