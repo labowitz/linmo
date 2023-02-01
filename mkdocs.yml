@@ -7,8 +7,11 @@ plugins:
   - mkdocstrings
 
 nav:
-  - Calculation Docs: index.md
-  - Tutorials: tutorials.md
-  - How-To Guides: how-to-guides.md
+  - Home: index.md
+  - Tutorial 1 - Rat retina: rat_retina.ipynb
+  - Tutorial 2 - Zebrafish retina: zebrafish_retina.ipynb
   - Reference: reference.md
-  - Explanation: explanation.md
+
+plugins:
+  - mkdocs-jupyter
+  - mkdocstrings

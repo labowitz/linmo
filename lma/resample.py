@@ -5,10 +5,9 @@ Provides functions for resampling tree datasets.
 This module contains the following functions:
 
 - `read_dataset` - Returns sorted tree dataset.
-- `make_dicts` - Returns tuple containing quartet, triplet, doublet, and cell dictionaries.
-- `resample_trees_doublets` - Returns DataFrame containing number of **doublets** across all resamples, the original trees, and the expected number (solved analytically).
-- `resample_trees_triplets` - Returns DataFrame containing number of **triplets** across all resamples, the original trees, and the expected number (solved analytically).
-- `resample_trees_quartets` - Returns DataFrame containing number of **quartets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_doublets` - Returns subtree dictionary and DataFrame containing number of **doublets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_triplets` - Returns subtree dictionary and DataFrame containing number of **triplets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_quartets` - Returns subtree dictionary and DataFrame containing number of **quartets** across all resamples, the original trees, and the expected number (solved analytically).
 """
 # +
 # packages for both resampling and plotting
@@ -189,10 +188,10 @@ def _make_quartet_dict(cell_fates):
 
 # -
 
-def make_dicts(all_trees_sorted, cell_fates=None):
+def _make_dicts(all_trees_sorted, cell_fates=None):
     """Makes subtree and cell dictionaries based on cell fates.
     
-    If `cell_fates` not provided, use automatically determined cell fates based on tree dataset.
+    If `cell_fates` not explicitly provided, use automatically determined cell fates based on tree dataset.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
@@ -385,6 +384,7 @@ def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, double
         #print(expected)
         expected_list.append(expected)
         
+    dfs_concat = dfs_concat.copy()
     dfs_concat['expected'] = expected_list
     dfs_concat.fillna(0, inplace=True)
     
@@ -394,29 +394,45 @@ def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, double
 def resample_trees_doublets(all_trees_sorted, 
                             num_resamples, 
                             replacement_bool, 
-                            doublet_dict,
-                            cell_dict):
-    """Performs resampling of trees, drawing with or without replacement, returning number of doublets across all resamples, 
-       the original trees, and the expected number (solved analytically).
+                            cell_fates='auto'
+                            ):
+    """Performs resampling of trees, drawing with or without replacement, returning subtree dictionary and DataFrame containing
+    number of doublets across all resamples, the original trees, and the expected number (solved analytically).
     
     Resampling is done by replacing each cell fate with a randomly chosen cell fate across all trees.
+    If `cell_fates` not explicitly provided, use automatically determined cell fates based on tree dataset.
+    
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
             Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
         num_resamples (int): Number of resample datasets.
         replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
-        doublet_dict (dict): Keys are doublets, values are integers.
-        cell_dict (dict): Keys are cell types, values are integers.
+        cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
+            based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     
     Returns:
-        dfs_concat (DataFrame): Indexed by values from `doublet_dict`.
+        (tuple): Contains the following variables.
+        - doublet_dict (dict): Keys are doublets, values are integers.
+        - cell_fates (list): List where each entry is a string representing a cell fate.
+        - dfs_concat (DataFrame): Indexed by values from `doublet_dict`.
             Last column is analytically solved expected number of each doublet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
 
 
     """
+    # automatically determine cell fates if not explicitly provided
+    if cell_fates == 'auto':
+        cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
+    
+    # _make_subtree_dict functions can only handle 10 cell fates max
+    if len(cell_fates)>10:
+        print('warning!')
+        
+    doublet_dict = _make_doublet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
+    
     # store result for each rearrangement in dfs list
     dfs_doublets_new = []
     df_doublets_true = _make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
@@ -436,7 +452,7 @@ def resample_trees_doublets(all_trees_sorted,
         
     dfs_concat = _process_dfs_doublet(df_doublets_true, dfs_doublets_new, num_resamples, doublet_dict, cell_dict, df_all_cells_true)
     
-    return dfs_concat
+    return (doublet_dict, cell_fates, dfs_concat)
 
 
 # returns relavent subtrees
@@ -639,6 +655,7 @@ def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, trip
         #print(expected)
         expected_list.append(expected)
         
+    dfs_concat = dfs_concat.copy()
     dfs_concat['expected'] = expected_list
     dfs_concat.fillna(0, inplace=True)
     
@@ -647,31 +664,45 @@ def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, trip
 
 def resample_trees_triplets(all_trees_sorted, 
                             num_resamples, 
-                            replacement_bool, 
-                            triplet_dict,
-                            doublet_dict,
-                            cell_dict):
-    """Performs resampling of tree, drawing with or without replacement, returning number of triplets across all resamples, 
-       the original trees, and the expected number (solved analytically).
+                            replacement_bool,
+                            cell_fates='auto'
+                           ):
+    """Performs resampling of tree, drawing with or without replacement, returning subtree dictionary and DataFrame containing 
+    number of triplets across all resamples, the original trees, and the expected number (solved analytically).
     
     Resampling is done via (1) replacing each cell with a randomly chosen singlet across all trees and 
     (2) replacing each doublet with a randomly chosen doublet across all trees.
+    If `cell_fates` not explicitly provided, use automatically determined cell fates based on tree dataset.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
             Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
         num_resamples (int): Number of resample datasets.
         replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
-        triplet_dict (dict): Keys are triplets, values are integers.
-        doublet_dict (dict): Keys are doublets, values are integers.
-        cell_dict (dict): Keys are cell types, values are integers.
+        cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
+            based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     
     Returns:
-        dfs_concat (DataFrame): Indexed by values from `triplet_dict`.
+        (tuple): Contains the following variables.
+        - triplet_dict (dict): Keys are triplets, values are integers.
+        - cell_fates (list): List where each entry is a string representing a cell fate.
+        - dfs_concat (DataFrame): Indexed by values from `triplet_dict`.
             Last column is analytically solved expected number of each triplet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
     """
+    # automatically determine cell fates if not explicitly provided
+    if cell_fates == 'auto':
+        cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
+    
+    # _make_subtree_dict functions can only handle 10 cell fates max
+    if len(cell_fates)>10:
+        print('warning!')
+      
+    triplet_dict = _make_triplet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
+    
     # store result for each rearrangement in dfs list
     dfs_triplets_new = []
     df_triplets_true = _make_df_triplets(all_trees_sorted, triplet_dict, 'observed', False)
@@ -699,7 +730,7 @@ def resample_trees_triplets(all_trees_sorted,
         
     dfs_concat = _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, triplet_dict, doublet_dict, cell_dict, df_doublets_true, df_singlets_true)
     
-    return dfs_concat
+    return (triplet_dict, cell_fates, dfs_concat)
 
 
 # returns relavent subtrees
@@ -825,6 +856,7 @@ def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quar
             expected *= 2
         expected_list.append(expected)
         
+    dfs_concat = dfs_concat.copy()
     dfs_concat['expected'] = expected_list
     dfs_concat.fillna(0, inplace=True)
     
@@ -833,30 +865,45 @@ def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quar
 
 def resample_trees_quartets(all_trees_sorted, 
                             num_resamples, 
-                            replacement_bool, 
-                            quartet_dict,
-                            doublet_dict):
-    """Performs resampling of tree, drawing with or without replacement, returning number of quartets across all
-    resamples, the original trees, and the expected number (solved analytically).
+                            replacement_bool,
+                            cell_fates='auto'
+                           ):
+    """Performs resampling of tree, drawing with or without replacement, returning subtree dictionary and DataFrame containing 
+    the number of quartets across all resamples, the original trees, and the expected number (solved analytically).
     
     Resampling is done via replacing each doublet with a randomly chosen doublet from across all trees.
+    If `cell_fates` not explicitly provided, use automatically determined cell fates based on tree dataset.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
             Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
         num_resamples (int): Number of resample datasets.
         replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
-        quartet_dict (dict): Keys are quartets, values are integers.
-        doublet_dict (dict): Keys are doublets, values are integers.
+        cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
+            based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     
     Returns:
-        dfs_concat (DataFrame): Indexed by values from `quartet_dict`.
+        (tuple): Contains the following variables.
+        - quartet_dict (dict): Keys are quartets, values are integers.
+        - cell_fates (list): List where each entry is a string representing a cell fate.
+        - dfs_concat (DataFrame): Indexed by values from `quartet_dict`.
             Last column is analytically solved expected number of each quartet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
 
 
     """
+    # automatically determine cell fates if not explicitly provided
+    if cell_fates == 'auto':
+        cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
+    
+    # _make_subtree_dict functions can only handle 10 cell fates max
+    if len(cell_fates)>10:
+        print('warning!')
+      
+    quartet_dict = _make_quartet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
+    
     # store result for each rearrangement in dfs list
     dfs_quartets_new = []
     df_quartets_true = _make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
@@ -876,4 +923,86 @@ def resample_trees_quartets(all_trees_sorted,
         
     dfs_concat = _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quartet_dict, doublet_dict, df_doublets_true)
     
-    return dfs_concat
+    return (quartet_dict, cell_fates, dfs_concat)
+
+def multi_dataset_resample_trees(datasets,
+                                 dataset_names,
+                                 subtree,
+                                 num_resamples, 
+                                 replacement_bool, 
+                                 cell_fates='auto'
+                                 ):
+    """Performs resampling of trees, drawing with or without replacement, returning number of subtrees across
+        all resamples, the original trees, and the expected number (solved analytically) 
+        **for multiple datasets**. The cell fates used are the composite set across all datasets provided.
+    
+    Resampling is done as described in each of the `resample_trees_subtrees` functions.
+    If `cell_fates` not explicitly provided, use automatically determined cell fates based on tree datasets.
+    
+    Args:
+        datasets (list): List where each entry is a path to txt file of dataset. 
+            txt file should be formatted as NEWICK trees separated with semi-colons and no spaces
+        dataset_names (list): List where each entry is a string representing the dataset label. 
+        subtree (string): type of subtree to be analyzed. Should be 'doublet', 'triplet', or 'quartet'.
+        num_resamples (int): Number of resample datasets.
+        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
+            based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
+    
+    Returns:
+        (tuple): Contains the following variables.
+        - subtree_dict (dict): Keys are subtrees, values are integers.
+        - cell_fates (list): List where each entry is a string representing a cell fate.
+        - dfs_dataset_concat (list): List where each entry is a DataFrame with the following characteristics.
+            Indexed by values from `subtree_dict`.
+            Last column is dataset label.
+            Second to last column is analytically solved expected number of each subtree.
+            Third to last column is observed number of occurences in the original dataset.
+            Rest of columns are the observed number of occurences in the resampled sets.
+
+
+    """
+    # automatically determine cell fates if not explicitly provided
+    if cell_fates == 'auto':
+        all_trees_sorted_list = []
+        for dataset in datasets:
+            all_trees_sorted = read_dataset(dataset)
+            all_trees_sorted_list.append(all_trees_sorted)
+        all_trees_sorted_list_flattened = [i for sublist in all_trees_sorted_list for i in sublist]
+        cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted_list_flattened for i in sublist])))))
+
+    # _make_subtree_dict functions can only handle 10 cell fates max
+    if len(cell_fates)>10:
+        print('warning!')
+        
+    # next, resample each dataset using composite cell fates list
+    dfs_dataset_list = []
+    for index, dataset in enumerate(tqdm(datasets)):
+        all_trees_sorted = read_dataset(dataset)
+        if subtree == 'doublet':
+            (subtree_dict, cell_fates, dfs_dataset) = resample_trees_doublets(all_trees_sorted, 
+                                                          num_resamples, 
+                                                          replacement_bool,
+                                                          cell_fates=cell_fates
+                                                          )
+            dfs_dataset['dataset'] = dataset_names[index]
+            
+        elif subtree == 'triplet':
+            (subtree_dict, cell_fates, dfs_dataset) = resample_trees_triplets(all_trees_sorted, 
+                                                          num_resamples, 
+                                                          replacement_bool,
+                                                          cell_fates=cell_fates
+                                                          )
+            dfs_dataset['dataset'] = dataset_names[index]
+            
+        elif subtree == 'quartet':
+            (subtree_dict, cell_fates, dfs_dataset) = resample_trees_quartets(all_trees_sorted, 
+                                                          num_resamples, 
+                                                          replacement_bool,
+                                                          cell_fates=cell_fates
+                                                          )
+            dfs_dataset['dataset'] = dataset_names[index]
+            
+        dfs_dataset_list.append(dfs_dataset)
+    dfs_dataset_concat = pd.concat(dfs_dataset_list)
+    return (subtree_dict, cell_fates, dfs_dataset_concat)
