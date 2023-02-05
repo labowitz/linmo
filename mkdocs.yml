@@ -15,3 +15,6 @@ nav:
 plugins:
   - mkdocs-jupyter
   - mkdocstrings
+
+markdown_extensions:
+  - footnotes

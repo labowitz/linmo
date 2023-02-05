@@ -1,6 +1,6 @@
 # LMA - Lineage Motif Analysis
 
-![image](assets/Layer 1.png)
+![](assets/Fullsize_Fades.gif)
 <figure markdown>
   <figcaption>Schematic of LMA - Figure 1c from the paper</figcaption>
 </figure>
@@ -13,13 +13,10 @@ This documentation provides a guide for using **Lineage Motif Analysis**, a comp
 2. [Tutorial 2 - Zebrafish retina](zebrafish_retina.ipynb)
 3. [Reference](reference.md)
 
-Quickly find what you're looking for depending on
-your use case by looking at the different pages.
-
 ## Project Overview
 
 ::: lma
 
 ## Acknowledgements
 
-This project is supported by ...
+This project is supported by the Chen Graduate Innovator Award and NIH F31 (NEI) award to MT.

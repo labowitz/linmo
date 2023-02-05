@@ -29,6 +29,7 @@ pyplot.rcParams['svg.fonttype'] = 'none'
 mpl.rcParams.update({'font.size': 8})
 mpl.rcParams['figure.dpi'] = 300
 
+
 # -
 
 def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num_null=1000):
@@ -487,7 +488,7 @@ def plot_frequency(subtree,
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
-        
+
 def plot_deviation(subtree, 
                    df_true_melt_subset, 
                    df_zscores_i_concat_melt_subset, 
@@ -714,7 +715,7 @@ def plot_deviation(subtree,
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
-        
+
 def multi_dataset_dfs_for_plotting(dfs_dataset_concat, 
                                    dataset_names, 
                                    num_resamples, 

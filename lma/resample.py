@@ -930,7 +930,7 @@ def multi_dataset_resample_trees(datasets,
                                  subtree,
                                  num_resamples, 
                                  replacement_bool, 
-                                 cell_fates='auto'
+                                 cell_fates='auto',
                                  ):
     """Performs resampling of trees, drawing with or without replacement, returning number of subtrees across
         all resamples, the original trees, and the expected number (solved analytically) 
