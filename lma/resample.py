@@ -392,8 +392,8 @@ def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, double
 
 
 def resample_trees_doublets(all_trees_sorted, 
-                            num_resamples, 
-                            replacement_bool, 
+                            num_resamples=10000, 
+                            replacement_bool=True, 
                             cell_fates='auto'
                             ):
     """Performs resampling of trees, drawing with or without replacement, returning subtree dictionary and DataFrame containing
@@ -406,8 +406,8 @@ def resample_trees_doublets(all_trees_sorted,
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
             Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
-        num_resamples (int): Number of resample datasets.
-        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        num_resamples (int, optional): Number of resample datasets.
+        replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
             based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     
@@ -663,8 +663,8 @@ def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, trip
 
 
 def resample_trees_triplets(all_trees_sorted, 
-                            num_resamples, 
-                            replacement_bool,
+                            num_resamples=10000, 
+                            replacement_bool=True,
                             cell_fates='auto'
                            ):
     """Performs resampling of tree, drawing with or without replacement, returning subtree dictionary and DataFrame containing 
@@ -677,8 +677,8 @@ def resample_trees_triplets(all_trees_sorted,
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
             Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
-        num_resamples (int): Number of resample datasets.
-        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        num_resamples (int, optional): Number of resample datasets.
+        replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
             based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     
@@ -864,8 +864,8 @@ def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quar
 
 
 def resample_trees_quartets(all_trees_sorted, 
-                            num_resamples, 
-                            replacement_bool,
+                            num_resamples=10000, 
+                            replacement_bool=True,
                             cell_fates='auto'
                            ):
     """Performs resampling of tree, drawing with or without replacement, returning subtree dictionary and DataFrame containing 
@@ -877,8 +877,8 @@ def resample_trees_quartets(all_trees_sorted,
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
             Trees are sorted to have all triplets in (x,(x,x)) format, and all doublets/quartets in alphabetical order.
-        num_resamples (int): Number of resample datasets.
-        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        num_resamples (int, optional): Number of resample datasets.
+        replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
             based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     
@@ -928,8 +928,8 @@ def resample_trees_quartets(all_trees_sorted,
 def multi_dataset_resample_trees(datasets,
                                  dataset_names,
                                  subtree,
-                                 num_resamples, 
-                                 replacement_bool, 
+                                 num_resamples=10000, 
+                                 replacement_bool=True, 
                                  cell_fates='auto',
                                  ):
     """Performs resampling of trees, drawing with or without replacement, returning number of subtrees across
@@ -944,8 +944,8 @@ def multi_dataset_resample_trees(datasets,
             txt file should be formatted as NEWICK trees separated with semi-colons and no spaces
         dataset_names (list): List where each entry is a string representing the dataset label. 
         subtree (string): type of subtree to be analyzed. Should be 'doublet', 'triplet', or 'quartet'.
-        num_resamples (int): Number of resample datasets.
-        replacement_bool (bool): Sample cells with or without replacement drawing from the pool of all cells.
+        num_resamples (int, optional): Number of resample datasets.
+        replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
             based on tree dataset. User can also provide list where each entry is a string representing a cell fate.
     

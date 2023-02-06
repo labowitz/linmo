@@ -10,6 +10,7 @@ nav:
   - Home: index.md
   - Tutorial 1 - Rat retina: rat_retina.ipynb
   - Tutorial 2 - Zebrafish retina: zebrafish_retina.ipynb
+  - Tutorial 3 - Mouse blastocyst: mouse_blastocyst.ipynb
   - Reference: reference.md
 
 plugins:

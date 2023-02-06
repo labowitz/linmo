@@ -11,7 +11,8 @@ This documentation provides a guide for using **Lineage Motif Analysis**, a comp
 
 1. [Tutorial 1 - Rat retina](rat_retina.ipynb)
 2. [Tutorial 2 - Zebrafish retina](zebrafish_retina.ipynb)
-3. [Reference](reference.md)
+3. [Tutorial 3 - Mouse blastocyst](mouse_blastocyst.ipynb)
+4. [Reference](reference.md)
 
 ## Project Overview
 
