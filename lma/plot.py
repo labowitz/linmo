@@ -41,9 +41,9 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
     
     Args:
         dfs_concat (DataFrame): Indexed by values from `subtree_dict`.
-            Last column is analytically solved expected number of each subtree.
-            Second to last column is observed number of occurences in the original dataset.
-            Rest of columns are the observed number of occurences in the resampled sets.
+            Last column is analytically solved expected count of each subtree.
+            Second to last column is observed count of occurences in the original dataset.
+            Rest of columns are the observed count of occurences in the resampled sets.
             Output from resample_trees functions.
         num_resamples (int): Number of resamples.
         subtree_dict (dict): Keys are subtrees, values are integers.
@@ -64,13 +64,13 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
                 - z-score (float): Computed using observed values and mean/std across resamples.
                 - abs z-score (float): Absolute value of z-score.
                 - label (string): Key corresponding to `subtree_dict`.
-                - min (float): Minimum count across across all resamples.
-                - mean (float): Average count across across all resamples.
-                - max (float): Maximum count across across all resamples.
+                - null min (float): Minimum count across across all resamples.
+                - null mean (float): Average count across across all resamples.
+                - null max (float): Maximum count across across all resamples.
                 - adj_p_val (float): Adjusted p-value, one-sided test, corrected using the Bonferonni correction.
-                - z-score min (float): Minimum z-score across across `num_null` random resamples.
-                - z-score mean (float): Average z-score across across `num_null` random resamples.
-                - z-score max (float): Maximum z-score across across `num_null` random resamples.
+                - null z-score min (float): Minimum z-score across across `num_null` random resamples.
+                - null z-score mean (float): Average z-score across across `num_null` random resamples.
+                - null z-score max (float): Maximum z-score across across `num_null` random resamples.
         - df_melt_subset (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant subtrees 
             across all resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
@@ -155,9 +155,9 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
         df_melt_100resamples_subset_list.append(df_melt_100resamples_subtree)
     df_melt_100resamples_subset = pd.concat(df_melt_100resamples_subset_list)
 
-    df_true_melt_subset['min'] = [df_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['mean'] = [df_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['max'] = [df_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null min'] = [df_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null mean'] = [df_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null max'] = [df_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
     
     # calculate p-value (one-sided test)
     adj_p_val_list = []
@@ -223,9 +223,9 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
         df_zscores_i_concat_melt_100resamples_subset_list.append(df_zscores_i_concat_melt_100resamples_subtree)
     df_zscores_i_concat_melt_100resamples_subset = pd.concat(df_zscores_i_concat_melt_100resamples_subset_list)
     
-    df_true_melt_subset['z-score min'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['z-score mean'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['z-score max'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null z-score min'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null z-score mean'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null z-score max'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
     
     return (df_true_melt_subset, df_melt_subset, df_melt_100resamples_subset, df_zscores_i_concat_melt_subset, df_zscores_i_concat_melt_100resamples_subset)
 
@@ -329,10 +329,10 @@ def plot_frequency(subtree,
                   size=0.5,
                  )
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset, color='red', label='Observed count', s=2.5)
-    pyplot.scatter(x='label', y='mean', data=df_true_melt_subset, color='gray', label='Count across all resamples', s=2.5)
+    pyplot.scatter(x='label', y='null mean', data=df_true_melt_subset, color='gray', label='Count across all resamples', s=2.5)
     pyplot.scatter(x='label', y='expected', data=df_true_melt_subset, color='black', label='Expected count', s=2.5)
-    pyplot.scatter(x='label', y='min', data=df_true_melt_subset, color='gray', s=0, label='')
-    pyplot.scatter(x='label', y='max', data=df_true_melt_subset, color='gray', s=0, label='')
+    pyplot.scatter(x='label', y='null min', data=df_true_melt_subset, color='gray', s=0, label='')
+    pyplot.scatter(x='label', y='null max', data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset, color='red', label='', s=2.5)
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
 
@@ -557,10 +557,10 @@ def plot_deviation(subtree,
                   size=0.5,
                  )
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='Observed count', s=2.5)
-    pyplot.scatter(x="label", y="z-score mean", data=df_true_melt_subset, color='gray', label='Resampled datasets', s=2.5)
-    pyplot.scatter(x="label", y="z-score mean", data=df_true_melt_subset, color='black', label=f'Average across {num_null} resamples', s=2.5)
-    pyplot.scatter(x="label", y="z-score min", data=df_true_melt_subset, color='gray', s=0, label='')
-    pyplot.scatter(x="label", y="z-score max", data=df_true_melt_subset, color='gray', s=0, label='')
+    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='gray', label='Resampled datasets', s=2.5)
+    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='black', label=f'Average across {num_null} resamples', s=2.5)
+    pyplot.scatter(x="label", y="null z-score min", data=df_true_melt_subset, color='gray', s=0, label='')
+    pyplot.scatter(x="label", y="null z-score max", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='', s=2.5)
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
 
@@ -732,9 +732,9 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
         dfs_dataset_concat (list): List where each entry is a DataFrame with the following characteristics.
             Indexed by values from `subtree_dict`.
             Last column is dataset label.
-            Second to last column is analytically solved expected number of each subtree.
-            Third to last column is observed number of occurences in the original dataset.
-            Rest of columns are the observed number of occurences in the resampled sets.
+            Second to last column is analytically solved expected count of each subtree.
+            Third to last column is observed count of occurences in the original dataset.
+            Rest of columns are the observed count of occurences in the resampled sets.
             Output from `multi_dataset_resample_trees` function.
         dataset_names (list): List where each entry is a string representing the dataset label. 
         num_resamples (int): Number of resamples.
@@ -758,14 +758,14 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
                 - z-score (float): Computed using observed values and mean/std across resamples.
                 - abs z-score (float): Absolute value of z-score.
                 - label (string): Key corresponding to `subtree_dict`.
-                - min (float): Minimum count across across all resamples.
-                - mean (float): Average count across across all resamples.
-                - max (float): Maximum count across across all resamples.
+                - null min (float): Minimum count across across all resamples.
+                - null mean (float): Average count across across all resamples.
+                - null max (float): Maximum count across across all resamples.
                 - adj_p_val (float): Adjusted p-value, one-sided test, corrected using the Bonferonni correction.
                 - dataset (string): Dataset label.
-                - z-score min (float): Minimum z-score across across `num_null` random resamples.
-                - z-score mean (float): Average z-score across across `num_null` random resamples.
-                - z-score max (float): Maximum z-score across across `num_null` random resamples.
+                - null z-score min (float): Minimum z-score across across `num_null` random resamples.
+                - null z-score mean (float): Average z-score across across `num_null` random resamples.
+                - null z-score max (float): Maximum z-score across across `num_null` random resamples.
         - df_melt_subset_concat_concat (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant subtrees 
             across all resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
@@ -839,9 +839,9 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
         df_true_melt.fillna(0, inplace=True)
         df_true_melt.sort_values('abs z-score', axis=0, ascending=False, inplace=True)
         df_true_melt['label'] = [list(subtree_dict.keys())[i] for i in df_true_melt['subtree_val'].values]
-        df_true_melt['min'] = [df_melt.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
-        df_true_melt['mean'] = [df_melt.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
-        df_true_melt['max'] = [df_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null min'] = [df_melt.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null mean'] = [df_melt.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null max'] = [df_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
         
         # calculate p-value (one-sided test)
         adj_p_val_list = []
@@ -894,9 +894,9 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
         df_zscores_i_concat_melt_list.append(df_zscores_i_concat_melt)
         df_zscores_i_concat_melt_100resamples_list.append(df_zscores_i_concat_melt_100resamples)
 
-        df_true_melt['z-score min'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
-        df_true_melt['z-score mean'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
-        df_true_melt['z-score max'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null z-score min'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null z-score mean'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null z-score max'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
 
     df_true_melt_concat = pd.concat(df_true_melt_list)
     
