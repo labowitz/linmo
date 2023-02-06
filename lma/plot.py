@@ -32,7 +32,7 @@ mpl.rcParams['figure.dpi'] = 300
 
 # -
 
-def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num_null=1000):
+def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null=1000):
     """Converts DataFrame from resample_trees functions into DataFrames for plotting.
     
     Calculates z-scores by comparing the observed count in the original trees to the mean/std across all resamples.
@@ -40,7 +40,7 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
     the resamples.
     
     Args:
-        dfs_concat (DataFrame): Indexed by values from `subtree_dict`.
+        dfs_c (DataFrame): Indexed by values from `subtree_dict`.
             Last column is analytically solved expected count of each subtree.
             Second to last column is observed count of occurences in the original dataset.
             Rest of columns are the observed count of occurences in the resampled sets.
@@ -81,12 +81,12 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (int): Counts across 100 random resamples.
                 - label (string): Key corresponding to `subtree_dict`.
-        - df_zscores_i_concat_melt_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
+        - df_null_zscores_i_c_melt_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
             subtrees across `num_null` random resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (float): Z-scores across `num_null` random resamples.
                 - label (string): Key corresponding to `subtree_dict`.
-        - df_zscores_i_concat_melt_100resamples_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
+        - df_null_zscores_i_c_melt_100resamples_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
             most significant subtrees across 100 random resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (float): Z-scores across 100 random resamples.
@@ -94,7 +94,7 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
     """
 
     # slice out the subtrees of the original trees
-    df_true_slice = dfs_concat.loc[:,'observed']
+    df_true_slice = dfs_c.loc[:,'observed']
 
     # dataframe of original trees
     data = {'subtree_val': df_true_slice.index,
@@ -102,12 +102,12 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
     df_true_melt = pd.DataFrame(data)
 
     # slice out the subtrees of the original trees
-    expected = dfs_concat.loc[:,'expected'].values
+    expected = dfs_c.loc[:,'expected'].values
 
     # dataframe of resampled trees
     resamples = num_resamples - 1
-    df_melt = pd.melt(dfs_concat.loc[:,'0':f'{resamples}'].transpose(), var_name='subtree_val', value_name='observed')
-    df_melt_100resamples = pd.melt(dfs_concat.loc[:,'0':'99'].transpose(), var_name='subtree_val', value_name='observed')
+    df_melt = pd.melt(dfs_c.loc[:,'0':f'{resamples}'].transpose(), var_name='subtree_val', value_name='observed')
+    df_melt_100resamples = pd.melt(dfs_c.loc[:,'0':'99'].transpose(), var_name='subtree_val', value_name='observed')
 
     # calculate zscores
     zscores = []
@@ -162,7 +162,7 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
     # calculate p-value (one-sided test)
     adj_p_val_list = []
     for i, j in zip(df_true_melt_subset['subtree_val'].values, df_true_melt_subset['z-score'].values):
-        resamples = dfs_concat.iloc[i].values[:-1]
+        resamples = dfs_c.iloc[i].values[:-1]
         actual = df_true_melt_subset.loc[df_true_melt_subset['subtree_val']==i]['observed'].values[0]
         if j > 0:
             pos = sum(resamples>=actual)
@@ -177,14 +177,14 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
     df_true_melt_subset['adj_p_val'] = adj_p_val_list
     
     # calculate deviation of each resample
-    df_zscores_i_list = []
+    df_null_zscores_i_list = []
     for i in tqdm(range(num_null)):
-        df_true_slice_i = dfs_concat[f'{i}'].copy()
+        df_true_slice_i = dfs_c[f'{i}'].copy()
         data = {'subtree_val': df_true_slice_i.index,
                 'observed': df_true_slice_i.values}
         df_true_melt_i = pd.DataFrame(data)
 
-        df_subset_i = dfs_concat[dfs_concat.columns[~dfs_concat.columns.isin([f'{i}','observed', 'expected'])]].copy()
+        df_subset_i = dfs_c[dfs_c.columns[~dfs_c.columns.isin([f'{i}','observed', 'expected'])]].copy()
         df_melt_i = pd.melt(df_subset_i.transpose(), var_name='subtree_val', value_name='observed')
 
         zscores_i = []
@@ -198,36 +198,36 @@ def dfs_for_plotting(dfs_concat, num_resamples, subtree_dict, cutoff='auto', num
                 zscore = (actual - mean) / std
             zscores_i.append(zscore)
 
-        df_zscores_i = pd.DataFrame(zscores_i, columns=[i])
-        df_zscores_i_list.append(df_zscores_i)
+        df_null_zscores_i = pd.DataFrame(zscores_i, columns=[i])
+        df_null_zscores_i_list.append(df_null_zscores_i)
         
-    df_zscores_i_concat = pd.concat(df_zscores_i_list, axis=1)
-    df_zscores_i_concat.fillna(0, inplace=True)
+    df_null_zscores_i_c = pd.concat(df_null_zscores_i_list, axis=1)
+    df_null_zscores_i_c.fillna(0, inplace=True)
     
-    df_zscores_i_concat_melt = df_zscores_i_concat.transpose().melt(var_name='subtree_val', value_name='observed')
-    df_zscores_i_concat_melt_100resamples = df_zscores_i_concat.loc[:,:99].transpose().melt(var_name='subtree_val', value_name='observed')
-    
-    # subset the resamples
-    df_zscores_i_concat_melt_subset_list = []
-    for i in df_true_melt_subset['subtree_val']:
-        df_zscores_i_concat_melt_subtree = df_zscores_i_concat_melt.loc[df_zscores_i_concat_melt['subtree_val']==i].copy()
-        df_zscores_i_concat_melt_subtree['label']=list(subtree_dict.keys())[i]
-        df_zscores_i_concat_melt_subset_list.append(df_zscores_i_concat_melt_subtree)
-    df_zscores_i_concat_melt_subset = pd.concat(df_zscores_i_concat_melt_subset_list)
+    df_null_zscores_i_c_melt = df_null_zscores_i_c.transpose().melt(var_name='subtree_val', value_name='observed')
+    df_null_zscores_i_c_melt_100resamples = df_null_zscores_i_c.loc[:,:99].transpose().melt(var_name='subtree_val', value_name='observed')
     
     # subset the resamples
-    df_zscores_i_concat_melt_100resamples_subset_list = []
+    df_null_zscores_i_c_melt_subset_list = []
     for i in df_true_melt_subset['subtree_val']:
-        df_zscores_i_concat_melt_100resamples_subtree = df_zscores_i_concat_melt_100resamples.loc[df_zscores_i_concat_melt_100resamples['subtree_val']==i].copy()
-        df_zscores_i_concat_melt_100resamples_subtree['label']=list(subtree_dict.keys())[i]
-        df_zscores_i_concat_melt_100resamples_subset_list.append(df_zscores_i_concat_melt_100resamples_subtree)
-    df_zscores_i_concat_melt_100resamples_subset = pd.concat(df_zscores_i_concat_melt_100resamples_subset_list)
+        df_null_zscores_i_c_melt_subtree = df_null_zscores_i_c_melt.loc[df_null_zscores_i_c_melt['subtree_val']==i].copy()
+        df_null_zscores_i_c_melt_subtree['label']=list(subtree_dict.keys())[i]
+        df_null_zscores_i_c_melt_subset_list.append(df_null_zscores_i_c_melt_subtree)
+    df_null_zscores_i_c_melt_subset = pd.concat(df_null_zscores_i_c_melt_subset_list)
     
-    df_true_melt_subset['null z-score min'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['null z-score mean'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
-    df_true_melt_subset['null z-score max'] = [df_zscores_i_concat_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    # subset the resamples
+    df_null_zscores_i_c_melt_100resamples_subset_list = []
+    for i in df_true_melt_subset['subtree_val']:
+        df_null_zscores_i_c_melt_100resamples_subtree = df_null_zscores_i_c_melt_100resamples.loc[df_null_zscores_i_c_melt_100resamples['subtree_val']==i].copy()
+        df_null_zscores_i_c_melt_100resamples_subtree['label']=list(subtree_dict.keys())[i]
+        df_null_zscores_i_c_melt_100resamples_subset_list.append(df_null_zscores_i_c_melt_100resamples_subtree)
+    df_null_zscores_i_c_melt_100resamples_subset = pd.concat(df_null_zscores_i_c_melt_100resamples_subset_list)
     
-    return (df_true_melt_subset, df_melt_subset, df_melt_100resamples_subset, df_zscores_i_concat_melt_subset, df_zscores_i_concat_melt_100resamples_subset)
+    df_true_melt_subset['null z-score min'] = [df_null_zscores_i_c_melt_subset.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null z-score mean'] = [df_null_zscores_i_c_melt_subset.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    df_true_melt_subset['null z-score max'] = [df_null_zscores_i_c_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
+    
+    return (df_true_melt_subset, df_melt_subset, df_melt_100resamples_subset, df_null_zscores_i_c_melt_subset, df_null_zscores_i_c_melt_100resamples_subset)
 
 
 def make_color_dict(labels, colors):
@@ -269,6 +269,8 @@ def plot_frequency(subtree,
                    df_melt_100resamples_subset, 
                    cell_color_dict,
                    cutoff='auto', 
+                   title='auto',
+                   multiple_datasets=False,
                    legend_bool=True, 
                    legend_pos='outside',
                    save=False, 
@@ -294,6 +296,8 @@ def plot_frequency(subtree,
             to include in plots.
             If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
             If NoneType, take all subtrees.
+        title (string, optional): Title to use for plot. If not provided explicitly, will be automatically determined to read `subtree` frequency.
+        multiple_datasets (bool, optional): Modify x-axis label depending if single or multiple datasets were used.
         legend_bool (bool, optional): Include legend in plot.
         legend_pos (string, optional): Position of legend (outside or inside).
         save (bool, optional): If True, save figure as file.
@@ -340,7 +344,10 @@ def plot_frequency(subtree,
     pyplot.grid(True)
     ax.set_xticklabels([])
 
-    pyplot.title(f'{subtree.capitalize()} frequency', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+    if title == 'auto':
+        pyplot.title(f'{subtree.capitalize()} frequency', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+    else:
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
     pyplot.ylabel('Counts', **{'fontname':'Arial', 'size':8})
     pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
@@ -383,7 +390,10 @@ def plot_frequency(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=22.5, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
     
     if subtree == 'triplet':
         for i in range(len(df_true_melt_subset['label'].values)):
@@ -427,7 +437,10 @@ def plot_frequency(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=40, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=40, **{'fontname':'Arial', 'size':8})
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=40, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=40, **{'fontname':'Arial', 'size':8})
     
 
     if subtree == 'quartet':
@@ -484,17 +497,22 @@ def plot_frequency(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=52.5, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
 
 def plot_deviation(subtree, 
                    df_true_melt_subset, 
-                   df_zscores_i_concat_melt_subset, 
-                   df_zscores_i_concat_melt_100resamples_subset, 
+                   df_null_zscores_i_c_melt_subset, 
+                   df_null_zscores_i_c_melt_100resamples_subset, 
                    cell_color_dict,
                    cutoff='auto', 
+                   title='auto',
+                   multiple_datasets=False,
                    num_null=1000,
                    legend_bool=True,
                    legend_pos='outside',
@@ -510,10 +528,10 @@ def plot_deviation(subtree,
         df_true_melt_subset (DataFrame): DataFrame with cutoff number of most significant subtrees for plotting.
             Sorted by z-score from most over-represented to most under-represented.
             Output from `dfs_for_plotting` function.
-        df_zscores_i_concat_melt_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
+        df_null_zscores_i_c_melt_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
             subtrees across `num_null` random resamples.
             Output from `dfs_for_plotting` function.
-        df_zscores_i_concat_melt_100resamples_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
+        df_null_zscores_i_c_melt_100resamples_subset (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
             most significant subtrees across 100 random resamples.
             Output from `dfs_for_plotting` function.
         cell_color_dict (dict): Keys are cell fates, values are colors.
@@ -521,6 +539,8 @@ def plot_deviation(subtree,
             to include in plots.
             If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
             If NoneType, take all subtrees.
+        title (string, optional): Title to use for plot. If not provided explicitly, will be automatically determined to read `subtree` frequency.
+        multiple_datasets (bool, optional): Modify x-axis label depending if single or multiple datasets were used.
         num_null (int, optional): Number of resamples used to calculate z-scores as part of null distribution.    
         legend_bool (bool, optional): Include legend in plot.
         legend_pos (string, optional): Position of legend (outside or inside).
@@ -542,7 +562,7 @@ def plot_deviation(subtree,
 
     sns.violinplot(x='label', 
                    y='observed', 
-                   data=df_zscores_i_concat_melt_subset, 
+                   data=df_null_zscores_i_c_melt_subset, 
                    cut=0,
                    inner=None,
                    color='#BCBEC0',
@@ -551,7 +571,7 @@ def plot_deviation(subtree,
                    )
     sns.stripplot(x='label', 
                   y='observed', 
-                  data=df_zscores_i_concat_melt_100resamples_subset, 
+                  data=df_null_zscores_i_c_melt_100resamples_subset, 
                   jitter=0.2,
                   color='gray',
                   size=0.5,
@@ -568,7 +588,10 @@ def plot_deviation(subtree,
     pyplot.grid(True)
     ax.set_xticklabels([])
 
-    pyplot.title(f'Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+    if title == 'auto':
+        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+    else:
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
     pyplot.ylabel('z-score', **{'fontname':'Arial', 'size':8})
     pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
@@ -610,7 +633,10 @@ def plot_deviation(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=22.5, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
     
     if subtree == 'triplet':
         for i in range(len(df_true_melt_subset['label'].values)):
@@ -654,7 +680,10 @@ def plot_deviation(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=40, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=40, **{'fontname':'Arial', 'size':8})
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=40, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=40, **{'fontname':'Arial', 'size':8})
     
 
     if subtree == 'quartet':
@@ -711,12 +740,15 @@ def plot_deviation(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=52.5, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
 
-def multi_dataset_dfs_for_plotting(dfs_dataset_concat, 
+def multi_dataset_dfs_for_plotting(dfs_dataset_c, 
                                    dataset_names, 
                                    num_resamples, 
                                    subtree_dict, 
@@ -729,7 +761,7 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
     the resamples.
     
     Args:
-        dfs_dataset_concat (list): List where each entry is a DataFrame with the following characteristics.
+        dfs_dataset_c (list): List where each entry is a DataFrame with the following characteristics.
             Indexed by values from `subtree_dict`.
             Last column is dataset label.
             Second to last column is analytically solved expected count of each subtree.
@@ -749,7 +781,7 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
     Returns:
         (tuple): Contains the following DataFrames.
 
-        - df_true_melt_dataset_label_concat_concat (DataFrame): DataFrame indexed by `cutoff` number of most significant subtrees for plotting.
+        - df_true_melt_dataset_label_c_c (DataFrame): DataFrame indexed by `cutoff` number of most significant subtrees for plotting.
             Sorted by z-score from most over-represented to most under-represented (using the most extreme z-score
             for each subtree across all datasets provided). Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
@@ -766,25 +798,25 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
                 - null z-score min (float): Minimum z-score across across `num_null` random resamples.
                 - null z-score mean (float): Average z-score across across `num_null` random resamples.
                 - null z-score max (float): Maximum z-score across across `num_null` random resamples.
-        - df_melt_subset_concat_concat (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant subtrees 
+        - df_melt_subset_c_c (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant subtrees 
             across all resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (int): Counts across all resamples.
                 - label (string): Key corresponding to `subtree_dict`.
                 - dataset (string): Dataset label.
-        - df_melt_100resamples_subset_concat_concat (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant
+        - df_melt_100resamples_subset_c_c (DataFrame): Melted DataFrame with observed count for `cutoff` number of most significant
             subtrees across 100 random resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (int): Counts across 100 random resamples.
                 - label (string): Key corresponding to `subtree_dict`.
                 - dataset (string): Dataset label.
-        - df_zscores_i_concat_melt_subset_concat_concat (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
+        - df_null_zscores_i_c_melt_subset_c_c (DataFrame): Melted DataFrame with null z-score for `cutoff` number of most significant
             subtrees across `num_null` random resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (float): Z-scores across `num_null` random resamples.
                 - label (string): Key corresponding to `subtree_dict`.
                 - dataset (string): Dataset label.
-        - df_zscores_i_concat_melt_100resamples_subset_concat_concat (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
+        - df_null_zscores_i_c_melt_100resamples_subset_c_c (DataFrame): Melted DataFrame with null z-score for `cutoff` number of 
             most significant subtrees across 100 random resamples. Contains the following columns:
                 - subtree_val (int): Value corresponding to `subtree_dict`.
                 - observed (float): Z-scores across 100 random resamples.
@@ -794,15 +826,15 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
     df_melt_list = []
     df_melt_100resamples_list = []
     df_true_melt_list = []
-    df_zscores_i_concat_melt_list = []
-    df_zscores_i_concat_melt_100resamples_list = []
+    df_null_zscores_i_c_melt_list = []
+    df_null_zscores_i_c_melt_100resamples_list = []
     
     for index, dataset_name in enumerate(dataset_names):
         
-        dfs_concat = dfs_dataset_concat.loc[dfs_dataset_concat['dataset']==dataset_name]
+        dfs_c = dfs_dataset_c.loc[dfs_dataset_c['dataset']==dataset_name]
     
         # slice out the triplets of the original trees
-        df_true_slice = dfs_concat.loc[:,'observed']
+        df_true_slice = dfs_c.loc[:,'observed']
 
         # dataframe of original trees
         data = {'subtree_val': df_true_slice.index,
@@ -810,12 +842,12 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
         df_true_melt = pd.DataFrame(data)
 
         # slice out the triplets of the original trees
-        expected = dfs_concat.loc[:,'expected'].values
+        expected = dfs_c.loc[:,'expected'].values
 
         # dataframe of resampled trees
         resamples = num_resamples - 1
-        df_melt = pd.melt(dfs_concat.loc[:,'0':f'{resamples}'].transpose(), var_name='subtree_val', value_name='observed')
-        df_melt_100resamples = pd.melt(dfs_concat.loc[:,'0':'99'].transpose(), var_name='subtree_val', value_name='observed')
+        df_melt = pd.melt(dfs_c.loc[:,'0':f'{resamples}'].transpose(), var_name='subtree_val', value_name='observed')
+        df_melt_100resamples = pd.melt(dfs_c.loc[:,'0':'99'].transpose(), var_name='subtree_val', value_name='observed')
 
         df_melt_list.append(df_melt)
         df_melt_100resamples_list.append(df_melt_100resamples)
@@ -846,7 +878,7 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
         # calculate p-value (one-sided test)
         adj_p_val_list = []
         for i, j in zip(df_true_melt['subtree_val'].values, df_true_melt['z-score'].values):
-            resamples = dfs_concat.iloc[i].values[:-1]
+            resamples = dfs_c.iloc[i].values[:-1]
             actual = df_true_melt.loc[df_true_melt['subtree_val']==i]['observed'].values[0]
             if j > 0:
                 pos = sum(resamples>=actual)
@@ -861,14 +893,14 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
         df_true_melt_list.append(df_true_melt)
         
         # calculate deviation of each resample
-        df_zscores_i_list = []
+        df_null_zscores_i_list = []
         for i in tqdm(range(num_null)):
-            df_true_slice_i = dfs_concat[f'{i}'].copy()
+            df_true_slice_i = dfs_c[f'{i}'].copy()
             data = {'subtree_val': df_true_slice_i.index,
                     'observed': df_true_slice_i.values}
             df_true_melt_i = pd.DataFrame(data)
 
-            df_subset_i = dfs_concat[dfs_concat.columns[~dfs_concat.columns.isin([f'{i}', 'observed', 'expected', 'dataset'])]].copy()
+            df_subset_i = dfs_c[dfs_c.columns[~dfs_c.columns.isin([f'{i}', 'observed', 'expected', 'dataset'])]].copy()
             df_melt_i = pd.melt(df_subset_i.transpose(), var_name='subtree_val', value_name='observed')
 
             zscores_i = []
@@ -882,125 +914,126 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_concat,
                     zscore = (actual - mean) / std
                 zscores_i.append(zscore)
 
-            df_zscores_i = pd.DataFrame(zscores_i, columns=[i])
-            df_zscores_i_list.append(df_zscores_i)
+            df_null_zscores_i = pd.DataFrame(zscores_i, columns=[i])
+            df_null_zscores_i_list.append(df_null_zscores_i)
 
-        df_zscores_i_concat = pd.concat(df_zscores_i_list, axis=1)
-        df_zscores_i_concat.fillna(0, inplace=True)
+        df_null_zscores_i_c = pd.concat(df_null_zscores_i_list, axis=1)
+        df_null_zscores_i_c.fillna(0, inplace=True)
 
-        df_zscores_i_concat_melt = df_zscores_i_concat.transpose().melt(var_name='subtree_val', value_name='observed')
-        df_zscores_i_concat_melt_100resamples = df_zscores_i_concat.loc[:,:99].transpose().melt(var_name='subtree_val', value_name='observed')
+        df_null_zscores_i_c_melt = df_null_zscores_i_c.transpose().melt(var_name='subtree_val', value_name='observed')
+        df_null_zscores_i_c_melt_100resamples = df_null_zscores_i_c.loc[:,:99].transpose().melt(var_name='subtree_val', value_name='observed')
         
-        df_zscores_i_concat_melt_list.append(df_zscores_i_concat_melt)
-        df_zscores_i_concat_melt_100resamples_list.append(df_zscores_i_concat_melt_100resamples)
+        df_null_zscores_i_c_melt_list.append(df_null_zscores_i_c_melt)
+        df_null_zscores_i_c_melt_100resamples_list.append(df_null_zscores_i_c_melt_100resamples)
 
-        df_true_melt['null z-score min'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
-        df_true_melt['null z-score mean'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
-        df_true_melt['null z-score max'] = [df_zscores_i_concat_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null z-score min'] = [df_null_zscores_i_c_melt.groupby(['subtree_val']).min(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null z-score mean'] = [df_null_zscores_i_c_melt.groupby(['subtree_val']).mean(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
+        df_true_melt['null z-score max'] = [df_null_zscores_i_c_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
 
-    df_true_melt_concat = pd.concat(df_true_melt_list)
+    df_true_melt_c = pd.concat(df_true_melt_list)
     
     # Loop through each subtree and take the highest absolute z-score across all datasets
-    df_true_melt_concat_label_list = []
+    df_true_melt_c_label_list = []
     for i in subtree_dict.keys():
-        df_true_melt_concat_label = df_true_melt_concat.loc[df_true_melt_concat['label']==i].copy()
-        if len(df_true_melt_concat_label) == 0:
+        df_true_melt_c_label = df_true_melt_c.loc[df_true_melt_c['label']==i].copy()
+        if len(df_true_melt_c_label) == 0:
             continue
-        df_true_melt_concat_label.sort_values('abs z-score', axis=0, ascending=False, inplace=True)
-        df_true_melt_concat_label = df_true_melt_concat_label.iloc[[0]].copy()
-        df_true_melt_concat_label_list.append(df_true_melt_concat_label)
+        df_true_melt_c_label.sort_values('abs z-score', axis=0, ascending=False, inplace=True)
+        df_true_melt_c_label = df_true_melt_c_label.iloc[[0]].copy()
+        df_true_melt_c_label_list.append(df_true_melt_c_label)
 
-    df_true_melt_concat_label_concat = pd.concat(df_true_melt_concat_label_list)
-    df_true_melt_concat_label_concat.sort_values('abs z-score', axis=0, ascending=False, inplace=True)
+    df_true_melt_c_label_c = pd.concat(df_true_melt_c_label_list)
+    df_true_melt_c_label_c.sort_values('abs z-score', axis=0, ascending=False, inplace=True)
     
     # Subset based on the cutoff number of subtrees
     if cutoff == 'auto':
-        cutoff = (df_true_melt_concat_label_concat['abs z-score'].values>1).sum()
-        df_true_melt_concat_label_concat_subset = df_true_melt_concat_label_concat.iloc[:cutoff].copy()
+        cutoff = (df_true_melt_c_label_c['abs z-score'].values>1).sum()
+        df_true_melt_c_label_c_subset = df_true_melt_c_label_c.iloc[:cutoff].copy()
     elif cutoff == None:
-        df_true_melt_concat_label_concat_subset = df_true_melt_concat_label_concat.copy()
+        df_true_melt_c_label_c_subset = df_true_melt_c_label_c.copy()
     else:
-        df_true_melt_concat_label_concat_subset = df_true_melt_concat_label_concat.iloc[:cutoff].copy()
+        df_true_melt_c_label_c_subset = df_true_melt_c_label_c.iloc[:cutoff].copy()
 
-    df_true_melt_concat_label_concat_subset.sort_values('z-score', axis=0, ascending=False, inplace=True)
+    df_true_melt_c_label_c_subset.sort_values('z-score', axis=0, ascending=False, inplace=True)
     
     # Subset the z-score DataFrame based on the cutoff number of subtrees in the DataFrames for each dataset
-    df_true_melt_dataset_label_concat_list = []
+    df_true_melt_dataset_label_c_list = []
     for dataset in dataset_names:
-        df_true_melt_dataset = df_true_melt_concat.loc[df_true_melt_concat['dataset']==dataset]
+        df_true_melt_dataset = df_true_melt_c.loc[df_true_melt_c['dataset']==dataset]
         df_true_melt_dataset_label_list = []
-        for i in df_true_melt_concat_label_concat_subset['subtree_val']:
+        for i in df_true_melt_c_label_c_subset['subtree_val']:
             df_true_melt_dataset_label = df_true_melt_dataset.loc[df_true_melt_dataset['subtree_val']==i]
             df_true_melt_dataset_label_list.append(df_true_melt_dataset_label)
-        df_true_melt_dataset_label_concat = pd.concat(df_true_melt_dataset_label_list)
-        df_true_melt_dataset_label_concat_list.append(df_true_melt_dataset_label_concat)
-    df_true_melt_dataset_label_concat_concat = pd.concat(df_true_melt_dataset_label_concat_list)
+        df_true_melt_dataset_label_c = pd.concat(df_true_melt_dataset_label_list)
+        df_true_melt_dataset_label_c_list.append(df_true_melt_dataset_label_c)
+    df_true_melt_dataset_label_c_c = pd.concat(df_true_melt_dataset_label_c_list)
     
     # Subset the melted DataFrames based on the cutoff number of subtrees in the DataFrames for each dataset
-    df_melt_subset_concat_list = []
-    df_melt_100resamples_subset_concat_list = []
-    df_zscores_i_concat_melt_subset_concat_list = []
-    df_zscores_i_concat_melt_100resamples_subset_concat_list = []
+    df_melt_subset_c_list = []
+    df_melt_100resamples_subset_c_list = []
+    df_null_zscores_i_c_melt_subset_c_list = []
+    df_null_zscores_i_c_melt_100resamples_subset_c_list = []
     for index, (df_melt, 
                 df_melt_100resamples, 
-                df_zscores_i_concat_melt, 
-                df_zscores_i_concat_melt_100resamples) in enumerate(zip(df_melt_list, 
+                df_null_zscores_i_c_melt, 
+                df_null_zscores_i_c_melt_100resamples) in enumerate(zip(df_melt_list, 
                                                                         df_melt_100resamples_list,
-                                                                        df_zscores_i_concat_melt_list, 
-                                                                        df_zscores_i_concat_melt_100resamples_list)):
+                                                                        df_null_zscores_i_c_melt_list, 
+                                                                        df_null_zscores_i_c_melt_100resamples_list)):
         df_melt_subset_list = []
-        for i in df_true_melt_concat_label_concat_subset['subtree_val']:
+        for i in df_true_melt_c_label_c_subset['subtree_val']:
             df_melt_subtree = df_melt.loc[df_melt['subtree_val']==i].copy()
             df_melt_subtree['label']=list(subtree_dict.keys())[i]
             df_melt_subset_list.append(df_melt_subtree)
-        df_melt_subset_concat = pd.concat(df_melt_subset_list)
-        df_melt_subset_concat['dataset'] = dataset_names[index]
-        df_melt_subset_concat_list.append(df_melt_subset_concat)
+        df_melt_subset_c = pd.concat(df_melt_subset_list)
+        df_melt_subset_c['dataset'] = dataset_names[index]
+        df_melt_subset_c_list.append(df_melt_subset_c)
 
         df_melt_100resamples_subset_list = []
-        for i in df_true_melt_concat_label_concat_subset['subtree_val']:
+        for i in df_true_melt_c_label_c_subset['subtree_val']:
             df_melt_100resamples_subtree = df_melt_100resamples.loc[df_melt_100resamples['subtree_val']==i].copy()
             df_melt_100resamples_subtree['label']=list(subtree_dict.keys())[i]
             df_melt_100resamples_subset_list.append(df_melt_100resamples_subtree)
-        df_melt_100resamples_subset_concat = pd.concat(df_melt_100resamples_subset_list)
-        df_melt_100resamples_subset_concat['dataset'] = dataset_names[index]
-        df_melt_100resamples_subset_concat_list.append(df_melt_100resamples_subset_concat)
+        df_melt_100resamples_subset_c = pd.concat(df_melt_100resamples_subset_list)
+        df_melt_100resamples_subset_c['dataset'] = dataset_names[index]
+        df_melt_100resamples_subset_c_list.append(df_melt_100resamples_subset_c)
         
-        df_zscores_i_concat_melt_subset_list = []
-        for i in df_true_melt_concat_label_concat_subset['subtree_val']:
-            df_zscores_i_concat_melt_subtree = df_zscores_i_concat_melt.loc[df_zscores_i_concat_melt['subtree_val']==i].copy()
-            df_zscores_i_concat_melt_subtree['label']=list(subtree_dict.keys())[i]
-            df_zscores_i_concat_melt_subset_list.append(df_zscores_i_concat_melt_subtree)
-        df_zscores_i_concat_melt_subset_concat = pd.concat(df_zscores_i_concat_melt_subset_list)
-        df_zscores_i_concat_melt_subset_concat['dataset'] = dataset_names[index]
-        df_zscores_i_concat_melt_subset_concat_list.append(df_zscores_i_concat_melt_subset_concat)
+        df_null_zscores_i_c_melt_subset_list = []
+        for i in df_true_melt_c_label_c_subset['subtree_val']:
+            df_null_zscores_i_c_melt_subtree = df_null_zscores_i_c_melt.loc[df_null_zscores_i_c_melt['subtree_val']==i].copy()
+            df_null_zscores_i_c_melt_subtree['label']=list(subtree_dict.keys())[i]
+            df_null_zscores_i_c_melt_subset_list.append(df_null_zscores_i_c_melt_subtree)
+        df_null_zscores_i_c_melt_subset_c = pd.concat(df_null_zscores_i_c_melt_subset_list)
+        df_null_zscores_i_c_melt_subset_c['dataset'] = dataset_names[index]
+        df_null_zscores_i_c_melt_subset_c_list.append(df_null_zscores_i_c_melt_subset_c)
         
-        df_zscores_i_concat_melt_100resamples_subset_list = []
-        for i in df_true_melt_concat_label_concat_subset['subtree_val']:
-            df_zscores_i_concat_melt_100resamples_subtree = df_zscores_i_concat_melt_100resamples.loc[df_zscores_i_concat_melt_100resamples['subtree_val']==i].copy()
-            df_zscores_i_concat_melt_100resamples_subtree['label']=list(subtree_dict.keys())[i]
-            df_zscores_i_concat_melt_100resamples_subset_list.append(df_zscores_i_concat_melt_100resamples_subtree)
-        df_zscores_i_concat_melt_100resamples_subset_concat = pd.concat(df_zscores_i_concat_melt_100resamples_subset_list)
-        df_zscores_i_concat_melt_100resamples_subset_concat['dataset'] = dataset_names[index]
-        df_zscores_i_concat_melt_100resamples_subset_concat_list.append(df_zscores_i_concat_melt_100resamples_subset_concat)
+        df_null_zscores_i_c_melt_100resamples_subset_list = []
+        for i in df_true_melt_c_label_c_subset['subtree_val']:
+            df_null_zscores_i_c_melt_100resamples_subtree = df_null_zscores_i_c_melt_100resamples.loc[df_null_zscores_i_c_melt_100resamples['subtree_val']==i].copy()
+            df_null_zscores_i_c_melt_100resamples_subtree['label']=list(subtree_dict.keys())[i]
+            df_null_zscores_i_c_melt_100resamples_subset_list.append(df_null_zscores_i_c_melt_100resamples_subtree)
+        df_null_zscores_i_c_melt_100resamples_subset_c = pd.concat(df_null_zscores_i_c_melt_100resamples_subset_list)
+        df_null_zscores_i_c_melt_100resamples_subset_c['dataset'] = dataset_names[index]
+        df_null_zscores_i_c_melt_100resamples_subset_c_list.append(df_null_zscores_i_c_melt_100resamples_subset_c)
 
-    df_melt_subset_concat_concat = pd.concat(df_melt_subset_concat_list)
-    df_melt_100resamples_subset_concat_concat = pd.concat(df_melt_100resamples_subset_concat_list)
-    df_zscores_i_concat_melt_subset_concat_concat = pd.concat(df_zscores_i_concat_melt_subset_concat_list)
-    df_zscores_i_concat_melt_100resamples_subset_concat_concat = pd.concat(df_zscores_i_concat_melt_100resamples_subset_concat_list)
+    df_melt_subset_c_c = pd.concat(df_melt_subset_c_list)
+    df_melt_100resamples_subset_c_c = pd.concat(df_melt_100resamples_subset_c_list)
+    df_null_zscores_i_c_melt_subset_c_c = pd.concat(df_null_zscores_i_c_melt_subset_c_list)
+    df_null_zscores_i_c_melt_100resamples_subset_c_c = pd.concat(df_null_zscores_i_c_melt_100resamples_subset_c_list)
         
-    return (df_true_melt_dataset_label_concat_concat,
-            df_melt_subset_concat_concat, 
-            df_melt_100resamples_subset_concat_concat,
-            df_zscores_i_concat_melt_subset_concat_concat,
-            df_zscores_i_concat_melt_100resamples_subset_concat_concat)
+    return (df_true_melt_dataset_label_c_c,
+            df_melt_subset_c_c, 
+            df_melt_100resamples_subset_c_c,
+            df_null_zscores_i_c_melt_subset_c_c,
+            df_null_zscores_i_c_melt_100resamples_subset_c_c)
 
 def multi_dataset_plot_deviation(subtree, 
                                  dataset_names,
-                                 df_true_melt_dataset_label_concat_concat, 
+                                 df_true_melt_dataset_label_c_c, 
                                  dataset_color_dict,
                                  cell_color_dict,
-                                 cutoff='auto', 
+                                 cutoff='auto',
+                                 title='auto',
                                  legend_bool=True,
                                  legend_pos='outside',
                                  save=False, 
@@ -1013,7 +1046,7 @@ def multi_dataset_plot_deviation(subtree,
     Args:
         subtree (string): Type of subtree.
         dataset_names (list): List where each entry is a string representing the dataset label. 
-        df_true_melt_dataset_label_concat_concat (DataFrame): DataFrame with cutoff number of most significant subtrees for plotting.
+        df_true_melt_dataset_label_c_c (DataFrame): DataFrame with cutoff number of most significant subtrees for plotting.
             Sorted by z-score from most over-represented to most under-represented.
             Output from `multi_dataset_dfs_for_plotting` function.
         dataset_color_dict (dict): Keys are dataset names, values are colors.
@@ -1022,6 +1055,7 @@ def multi_dataset_plot_deviation(subtree,
             to include in plots.
             If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
             If NoneType, take all subtrees.
+        title (string, optional): Title to use for plot. If not provided explicitly, will be automatically determined to read `subtree` frequency.
         legend_bool (bool, optional): Include legend in plot.
         legend_pos (string, optional): Position of legend (outside or inside).
         save (bool, optional): If True, save figure as file.
@@ -1032,7 +1066,7 @@ def multi_dataset_plot_deviation(subtree,
     
     margins=0.05
     bbox_to_anchor=(0, 0)  
-    figsize=(0.23*len(df_true_melt_dataset_label_concat_concat)/len(dataset_names)+margins, 2.5)
+    figsize=(0.23*len(df_true_melt_dataset_label_c_c)/len(dataset_names)+margins, 2.5)
 
     sns.set_style('whitegrid')
     fig, ax = pyplot.subplots(figsize=figsize)
@@ -1041,14 +1075,17 @@ def multi_dataset_plot_deviation(subtree,
     pyplot.axhline(y=0, color='gray', linestyle='-', label='No deviation', zorder=1)
 
     for i, dataset in enumerate(dataset_names):
-        pyplot.scatter(x="label", y="z-score", data=df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset], color=dataset_color_dict[dataset], label=f'{dataset}', s=10, zorder=i*5)
-        pyplot.plot(df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset]['label'], df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset]['z-score'], color=dataset_color_dict[dataset], linewidth=0.75, zorder=i*10)
+        pyplot.scatter(x="label", y="z-score", data=df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset], color=dataset_color_dict[dataset], label=f'{dataset}', s=10, zorder=i*5)
+        pyplot.plot(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['label'], df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['z-score'], color=dataset_color_dict[dataset], linewidth=0.75, zorder=i*10)
 
     pyplot.margins(margins)
     pyplot.grid(True)
     ax.set_xticklabels([])
 
-    pyplot.title(f'Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+    if title == 'auto':
+        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+    else:
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
     pyplot.ylabel('z-score', **{'fontname':'Arial', 'size':8})
     pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
@@ -1062,9 +1099,9 @@ def multi_dataset_plot_deviation(subtree,
         artist.set_zorder(1)
 
     if subtree == 'doublet':   
-        for i in range(len(df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values)):
-            c1_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][1]
-            c2_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][3]
+        for i in range(len(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values)):
+            c1_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][1]
+            c2_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][3]
 
             x = i
             y = -0.06
@@ -1090,13 +1127,13 @@ def multi_dataset_plot_deviation(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=22.5, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_concat_concat)/len(dataset_names))} by abs z-score)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=22.5, **{'fontname':'Arial', 'size':8})
 
     if subtree == 'triplet':
-        for i in range(len(df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values)):
-            c1_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][1]
-            c2_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][4]
-            c3_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][6]
+        for i in range(len(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values)):
+            c1_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][1]
+            c2_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][4]
+            c3_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][6]
 
             x = i
             y = -0.06
@@ -1134,15 +1171,15 @@ def multi_dataset_plot_deviation(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=40, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_concat_concat)/len(dataset_names))} by abs z-score)', labelpad=40, **{'fontname':'Arial', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=40, **{'fontname':'Arial', 'size':8})
 
 
     if subtree == 'quartet':
-        for i in range(len(df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values)):
-            c1_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][2]
-            c2_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][4]
-            c3_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][8]
-            c4_str = df_true_melt_dataset_label_concat_concat.loc[df_true_melt_dataset_label_concat_concat['dataset']==dataset_names[0]]['label'].values[i][10]
+        for i in range(len(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values)):
+            c1_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][2]
+            c2_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][4]
+            c3_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][8]
+            c4_str = df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset_names[0]]['label'].values[i][10]
 
             x = i
             y = -0.06
@@ -1191,7 +1228,7 @@ def multi_dataset_plot_deviation(subtree,
         if cutoff==None:
             pyplot.xlabel(f'All {subtree} combinations', labelpad=52.5, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_concat_concat)/len(dataset_names))} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
 
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")

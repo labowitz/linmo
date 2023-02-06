@@ -337,7 +337,7 @@ def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, double
         df_all_cells_true (DataFrame): DataFrame with number of each cell fate in original trees, indexed by `cell_dict`.
     
     Returns:
-        dfs_concat (DataFrame): Indexed by values from `doublet_dict`.
+        dfs_c (DataFrame): Indexed by values from `doublet_dict`.
             Last column is analytically solved expected number of each doublet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
@@ -345,20 +345,20 @@ def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, double
     """
     
     dfs_list = [dfs_doublet_new[i] for i in range(num_resamples)] + [df_doublet_true]
-    dfs_concat = pd.concat(dfs_list, axis=1, sort=False)
+    dfs_c = pd.concat(dfs_list, axis=1, sort=False)
     
-    dfs_concat.fillna(0, inplace=True)
+    dfs_c.fillna(0, inplace=True)
 
     # for doublet df
-    empty_indices = [i for i in range(0,len(doublet_dict)) if i not in dfs_concat.index]
+    empty_indices = [i for i in range(0,len(doublet_dict)) if i not in dfs_c.index]
     for i in empty_indices:
         num_zeros = num_resamples+1
         index_to_append = {i: [0]*num_zeros}
         df_to_append = pd.DataFrame(index_to_append)
         df_to_append = df_to_append.transpose()
-        df_to_append.columns = dfs_concat.columns
-        dfs_concat = pd.concat([dfs_concat, df_to_append], axis=0)
-    dfs_concat.sort_index(inplace=True)
+        df_to_append.columns = dfs_c.columns
+        dfs_c = pd.concat([dfs_c, df_to_append], axis=0)
+    dfs_c.sort_index(inplace=True)
     
     # for all cells df
     empty_indices = [i for i in range(0,len(cell_dict)) if i not in df_all_cells_true.index]
@@ -378,17 +378,17 @@ def _process_dfs_doublet(df_doublet_true, dfs_doublet_new, num_resamples, double
         p_cell_1 = df_all_cells_true_norm.loc[cell_1].values[0]
         p_cell_2 = df_all_cells_true_norm.loc[cell_2].values[0]
         #print(p_cell_1, p_cell_2)
-        expected = dfs_concat.sum()[0]*p_cell_1*p_cell_2
+        expected = dfs_c.sum()[0]*p_cell_1*p_cell_2
         if cell_1 != cell_2:
             expected *= 2
         #print(expected)
         expected_list.append(expected)
         
-    dfs_concat = dfs_concat.copy()
-    dfs_concat['expected'] = expected_list
-    dfs_concat.fillna(0, inplace=True)
+    dfs_c = dfs_c.copy()
+    dfs_c['expected'] = expected_list
+    dfs_c.fillna(0, inplace=True)
     
-    return dfs_concat
+    return dfs_c
 
 
 def resample_trees_doublets(all_trees_sorted, 
@@ -415,7 +415,7 @@ def resample_trees_doublets(all_trees_sorted,
         (tuple): Contains the following variables.
         - doublet_dict (dict): Keys are doublets, values are integers.
         - cell_fates (list): List where each entry is a string representing a cell fate.
-        - dfs_concat (DataFrame): Indexed by values from `doublet_dict`.
+        - dfs_c (DataFrame): Indexed by values from `doublet_dict`.
             Last column is analytically solved expected number of each doublet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
@@ -450,9 +450,9 @@ def resample_trees_doublets(all_trees_sorted,
         df_doublets_new = _make_df_doublets(new_trees, doublet_dict, resample, False)
         dfs_doublets_new.append(df_doublets_new)
         
-    dfs_concat = _process_dfs_doublet(df_doublets_true, dfs_doublets_new, num_resamples, doublet_dict, cell_dict, df_all_cells_true)
+    dfs_c = _process_dfs_doublet(df_doublets_true, dfs_doublets_new, num_resamples, doublet_dict, cell_dict, df_all_cells_true)
     
-    return (doublet_dict, cell_fates, dfs_concat)
+    return (doublet_dict, cell_fates, dfs_c)
 
 
 # returns relavent subtrees
@@ -602,7 +602,7 @@ def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, trip
         df_singlets_true (DataFrame): DataFrame with number of each cell fate in original trees, indexed by `cell_dict`.
     
     Returns:
-        dfs_concat (DataFrame): Indexed by values from `triplet_dict`.
+        dfs_c (DataFrame): Indexed by values from `triplet_dict`.
             Last column is analytically solved expected number of each triplet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
@@ -610,20 +610,20 @@ def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, trip
     """
     
     dfs_list = [dfs_triplets_new[i] for i in range(num_resamples)] + [df_triplets_true]
-    dfs_concat = pd.concat(dfs_list, axis=1, sort=False)
+    dfs_c = pd.concat(dfs_list, axis=1, sort=False)
     
-    dfs_concat.fillna(0, inplace=True)
+    dfs_c.fillna(0, inplace=True)
 
     # for triplet df
-    empty_indices = [i for i in range(0,len(triplet_dict)) if i not in dfs_concat.index]
+    empty_indices = [i for i in range(0,len(triplet_dict)) if i not in dfs_c.index]
     for i in empty_indices:
         num_zeros = num_resamples+1
         index_to_append = {i: [0]*num_zeros}
         df_to_append = pd.DataFrame(index_to_append)
         df_to_append = df_to_append.transpose()
-        df_to_append.columns = dfs_concat.columns
-        dfs_concat = pd.concat([dfs_concat, df_to_append], axis=0)
-    dfs_concat.sort_index(inplace=True)
+        df_to_append.columns = dfs_c.columns
+        dfs_c = pd.concat([dfs_c, df_to_append], axis=0)
+    dfs_c.sort_index(inplace=True)
     
     # for singlets df
     empty_indices = [i for i in range(0,len(cell_dict)) if i not in df_singlets_true.index]
@@ -651,15 +651,15 @@ def _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, trip
         p_cell_1 = df_singlets_true_norm.loc[cell_1].values[0]
         p_cell_2 = df_doublets_true_norm.loc[cell_2].values[0]
         #print(p_cell_1, p_cell_2)
-        expected = dfs_concat.sum()[0]*p_cell_1*p_cell_2
+        expected = dfs_c.sum()[0]*p_cell_1*p_cell_2
         #print(expected)
         expected_list.append(expected)
         
-    dfs_concat = dfs_concat.copy()
-    dfs_concat['expected'] = expected_list
-    dfs_concat.fillna(0, inplace=True)
+    dfs_c = dfs_c.copy()
+    dfs_c['expected'] = expected_list
+    dfs_c.fillna(0, inplace=True)
     
-    return dfs_concat
+    return dfs_c
 
 
 def resample_trees_triplets(all_trees_sorted, 
@@ -686,7 +686,7 @@ def resample_trees_triplets(all_trees_sorted,
         (tuple): Contains the following variables.
         - triplet_dict (dict): Keys are triplets, values are integers.
         - cell_fates (list): List where each entry is a string representing a cell fate.
-        - dfs_concat (DataFrame): Indexed by values from `triplet_dict`.
+        - dfs_c (DataFrame): Indexed by values from `triplet_dict`.
             Last column is analytically solved expected number of each triplet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
@@ -728,9 +728,9 @@ def resample_trees_triplets(all_trees_sorted,
         df_triplets_new = _make_df_triplets(new_trees_3, triplet_dict, resample, False)
         dfs_triplets_new.append(df_triplets_new)
         
-    dfs_concat = _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, triplet_dict, doublet_dict, cell_dict, df_doublets_true, df_singlets_true)
+    dfs_c = _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, triplet_dict, doublet_dict, cell_dict, df_doublets_true, df_singlets_true)
     
-    return (triplet_dict, cell_fates, dfs_concat)
+    return (triplet_dict, cell_fates, dfs_c)
 
 
 # returns relavent subtrees
@@ -810,7 +810,7 @@ def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quar
         df_doublets_true (DataFrame): DataFrame with number of each doublet in original trees, indexed by `doublet_dict`.
     
     Returns:
-        dfs_concat (DataFrame): Indexed by values from `quartet_dict`.
+        dfs_c (DataFrame): Indexed by values from `quartet_dict`.
             Last column is analytically solved expected number of each quartet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
@@ -818,20 +818,20 @@ def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quar
     """
     
     dfs_list = [dfs_quartets_new[i] for i in range(num_resamples)] + [df_quartets_true]
-    dfs_concat = pd.concat(dfs_list, axis=1, sort=False)
+    dfs_c = pd.concat(dfs_list, axis=1, sort=False)
     
-    dfs_concat.fillna(0, inplace=True)
+    dfs_c.fillna(0, inplace=True)
 
     # for quartet df
-    empty_indices = [i for i in range(0,len(quartet_dict)) if i not in dfs_concat.index]
+    empty_indices = [i for i in range(0,len(quartet_dict)) if i not in dfs_c.index]
     for i in empty_indices:
         num_zeros = num_resamples+1
         index_to_append = {i: [0]*num_zeros}
         df_to_append = pd.DataFrame(index_to_append)
         df_to_append = df_to_append.transpose()
-        df_to_append.columns = dfs_concat.columns
-        dfs_concat = pd.concat([dfs_concat, df_to_append], axis=0)
-    dfs_concat.sort_index(inplace=True)
+        df_to_append.columns = dfs_c.columns
+        dfs_c = pd.concat([dfs_c, df_to_append], axis=0)
+    dfs_c.sort_index(inplace=True)
     
     # for doublets df
     empty_indices = [i for i in range(0,len(doublet_dict)) if i not in df_doublets_true.index]
@@ -850,17 +850,17 @@ def _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quar
         p_cell_1 = df_doublets_true_norm.loc[cell_1].values[0]
         p_cell_2 = df_doublets_true_norm.loc[cell_2].values[0]
         #print(p_cell_1, p_cell_2)
-        expected = dfs_concat.sum()[0]*p_cell_1*p_cell_2
+        expected = dfs_c.sum()[0]*p_cell_1*p_cell_2
         #print(expected)
         if cell_1 != cell_2:
             expected *= 2
         expected_list.append(expected)
         
-    dfs_concat = dfs_concat.copy()
-    dfs_concat['expected'] = expected_list
-    dfs_concat.fillna(0, inplace=True)
+    dfs_c = dfs_c.copy()
+    dfs_c['expected'] = expected_list
+    dfs_c.fillna(0, inplace=True)
     
-    return dfs_concat
+    return dfs_c
 
 
 def resample_trees_quartets(all_trees_sorted, 
@@ -886,7 +886,7 @@ def resample_trees_quartets(all_trees_sorted,
         (tuple): Contains the following variables.
         - quartet_dict (dict): Keys are quartets, values are integers.
         - cell_fates (list): List where each entry is a string representing a cell fate.
-        - dfs_concat (DataFrame): Indexed by values from `quartet_dict`.
+        - dfs_c (DataFrame): Indexed by values from `quartet_dict`.
             Last column is analytically solved expected number of each quartet.
             Second to last column is observed number of occurences in the original dataset.
             Rest of columns are the observed number of occurences in the resampled sets.
@@ -921,9 +921,9 @@ def resample_trees_quartets(all_trees_sorted,
         df_quartets_new = _make_df_quartets(new_trees, quartet_dict, resample, False)
         dfs_quartets_new.append(df_quartets_new)
         
-    dfs_concat = _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quartet_dict, doublet_dict, df_doublets_true)
+    dfs_c = _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quartet_dict, doublet_dict, df_doublets_true)
     
-    return (quartet_dict, cell_fates, dfs_concat)
+    return (quartet_dict, cell_fates, dfs_c)
 
 def multi_dataset_resample_trees(datasets,
                                  dataset_names,
@@ -953,7 +953,7 @@ def multi_dataset_resample_trees(datasets,
         (tuple): Contains the following variables.
         - subtree_dict (dict): Keys are subtrees, values are integers.
         - cell_fates (list): List where each entry is a string representing a cell fate.
-        - dfs_dataset_concat (list): List where each entry is a DataFrame with the following characteristics.
+        - dfs_dataset_c (list): List where each entry is a DataFrame with the following characteristics.
             Indexed by values from `subtree_dict`.
             Last column is dataset label.
             Second to last column is analytically solved expected number of each subtree.
@@ -1004,5 +1004,5 @@ def multi_dataset_resample_trees(datasets,
             dfs_dataset['dataset'] = dataset_names[index]
             
         dfs_dataset_list.append(dfs_dataset)
-    dfs_dataset_concat = pd.concat(dfs_dataset_list)
-    return (subtree_dict, cell_fates, dfs_dataset_concat)
+    dfs_dataset_c = pd.concat(dfs_dataset_list)
+    return (subtree_dict, cell_fates, dfs_dataset_c)
