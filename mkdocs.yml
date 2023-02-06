@@ -2,16 +2,21 @@ site_name: LMA
 
 theme:
   name: "material"
+  features:
+    - navigation.sections
 
 plugins:
   - mkdocstrings
 
 nav:
   - Home: index.md
-  - Tutorial 1 - Rat retina: rat_retina.ipynb
-  - Tutorial 2 - Zebrafish retina: zebrafish_retina.ipynb
-  - Tutorial 3 - Mouse blastocyst: mouse_blastocyst.ipynb
-  - Reference: reference.md
+  - 'General':
+    - Installation: installation.md
+    - Reference: reference.md
+  - 'Gallery':
+    - Tutorial 1 - Rat retina: rat_retina.ipynb
+    - Tutorial 2 - Zebrafish retina: zebrafish_retina.ipynb
+    - Tutorial 3 - Mouse blastocyst: mouse_blastocyst.ipynb
 
 plugins:
   - mkdocs-jupyter
@@ -19,3 +24,8 @@ plugins:
 
 markdown_extensions:
   - footnotes
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
