@@ -25,6 +25,7 @@ import matplotlib.patches as mpatches
 from matplotlib.offsetbox import DrawingArea, AnnotationBbox
 import matplotlib.font_manager as font_manager
 from matplotlib.collections import PathCollection
+from statsmodels.stats.multitest import multipletests
 pyplot.rcParams['svg.fonttype'] = 'none'
 mpl.rcParams.update({'font.size': 8})
 mpl.rcParams['figure.dpi'] = 300
@@ -67,7 +68,9 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
                 - null min (float): Minimum count across across all resamples.
                 - null mean (float): Average count across across all resamples.
                 - null max (float): Maximum count across across all resamples.
-                - adj_p_val (float): Adjusted p-value, one-sided test, corrected using the Bonferonni correction.
+                - p_val (float): p-value, one-sided test, not corrected for multiple hypotheses testing.
+                - adj_p_val_fdr_bh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction
+                - adj_p_val_fdr_tsbh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction with two stage linear step-up procedure
                 - null z-score min (float): Minimum z-score across across `num_null` random resamples.
                 - null z-score mean (float): Average z-score across across `num_null` random resamples.
                 - null z-score max (float): Maximum z-score across across `num_null` random resamples.
@@ -160,7 +163,7 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
     df_true_melt_subset['null max'] = [df_melt_subset.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt_subset['subtree_val']]
     
     # calculate p-value (one-sided test)
-    adj_p_val_list = []
+    p_val_list = []
     for i, j in zip(df_true_melt_subset['subtree_val'].values, df_true_melt_subset['z-score'].values):
         resamples = dfs_c.iloc[i].values[:-1]
         actual = df_true_melt_subset.loc[df_true_melt_subset['subtree_val']==i]['observed'].values[0]
@@ -171,10 +174,12 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
         elif j == 0:
             pos=len(resamples)
 
-        p_val = pos/len(resamples)*len(df_true_melt)
-        adj_p_val_list.append(p_val)
+        p_val = pos/len(resamples)
+        p_val_list.append(p_val)
 
-    df_true_melt_subset['adj_p_val'] = adj_p_val_list
+    df_true_melt_subset['p_val'] = p_val_list
+    df_true_melt_subset['adj_p_val_fdr_bh'] = multipletests(p_val_list, method='fdr_bh')[1]
+    df_true_melt_subset['adj_p_val_fdr_tsbh'] = multipletests(p_val_list, method='fdr_tsbh')[1]
     
     # calculate deviation of each resample
     df_null_zscores_i_list = []
@@ -229,7 +234,6 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
     
     return (df_true_melt_subset, df_melt_subset, df_melt_100resamples_subset, df_null_zscores_i_c_melt_subset, df_null_zscores_i_c_melt_100resamples_subset)
 
-
 def make_color_dict(labels, colors):
     """Makes color dictionary based on provided labels (can be cell types or dataset names).
     
@@ -263,11 +267,20 @@ def _make_circle(color, size, x, y, alpha):
                         pad=0)
     return c1
 
+def _annot(number):
+    if number < 0.0005:
+        return '***'
+    elif number < 0.005:
+        return '**'
+    elif number < 0.05:
+        return '*'
+
 def plot_frequency(subtree, 
                    df_true_melt_subset, 
                    df_melt_subset, 
                    df_melt_100resamples_subset, 
                    cell_color_dict,
+                   fdr_type='fdr_tsbh',
                    cutoff='auto', 
                    title='auto',
                    multiple_datasets=False,
@@ -292,6 +305,8 @@ def plot_frequency(subtree,
             subtrees across 100 random resamples.
             Output from `dfs_for_plotting` function.
         cell_color_dict (dict): Keys are cell fates, values are colors.
+        fdr_type (string, optional): Use the Benjamini and Hochberg FDR correction if 'fdr_bh', use Benjamini and Hochberg FDR correction
+            with two stage linear step-up procedure if 'fdr_tsbh'. Uses 'fdr_tsbh' by default.
         cutoff (string or NoneType or int, optional): Take `cutoff` number of subtrees with largest absolute z-scores 
             to include in plots.
             If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
@@ -306,7 +321,7 @@ def plot_frequency(subtree,
         image_save_path (string, optional): Path to saved image file.
     """
 
-    df_true_melt_subset_sg = df_true_melt_subset.loc[df_true_melt_subset['adj_p_val']<0.05].copy()
+    df_true_melt_subset_sg = df_true_melt_subset.loc[df_true_melt_subset[f'adj_p_val_{fdr_type}']<0.05].copy()
     
     margins=0.05
     bbox_to_anchor=(0, 0)  
@@ -340,7 +355,19 @@ def plot_frequency(subtree,
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset, color='red', label='', s=2.5)
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
 
-    pyplot.margins(margins)
+    # add annotations for adjusted p-value
+    for label in df_true_melt_subset_sg['label'].values:
+        adj_p_val = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label][f'adj_p_val_{fdr_type}'].values[0]
+        val = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['observed'].values[0]
+        null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null mean'].values[0]
+        if val > null:
+            y_coord = val+max(df_true_melt_subset['observed'])/10
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom')
+        else:
+            y_coord = val-max(df_true_melt_subset['observed'])/10
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top')
+
+    pyplot.margins(x=0.05, y=0.15)
     pyplot.grid(True)
     ax.set_xticklabels([])
 
@@ -510,6 +537,7 @@ def plot_deviation(subtree,
                    df_null_zscores_i_c_melt_subset, 
                    df_null_zscores_i_c_melt_100resamples_subset, 
                    cell_color_dict,
+                   fdr_type='fdr_tsbh',
                    cutoff='auto', 
                    title='auto',
                    multiple_datasets=False,
@@ -535,6 +563,8 @@ def plot_deviation(subtree,
             most significant subtrees across 100 random resamples.
             Output from `dfs_for_plotting` function.
         cell_color_dict (dict): Keys are cell fates, values are colors.
+        fdr_type (string, optional): Use the Benjamini and Hochberg FDR correction if 'fdr_bh', use Benjamini and Hochberg FDR correction
+            with two stage linear step-up procedure if 'fdr_tsbh'. Uses 'fdr_tsbh' by default.
         cutoff (string or NoneType or int, optional): Take `cutoff` number of subtrees with largest absolute z-scores 
             to include in plots.
             If not provided explicitly, will be automatically determined to take all subtrees with abs z-score > 1.
@@ -550,7 +580,7 @@ def plot_deviation(subtree,
         image_save_path (string, optional): Path to saved image file.
     """
 
-    df_true_melt_subset_sg = df_true_melt_subset.loc[df_true_melt_subset['adj_p_val']<0.05].copy()
+    df_true_melt_subset_sg = df_true_melt_subset.loc[df_true_melt_subset[f'adj_p_val_{fdr_type}']<0.05].copy()
     
     margins=0.05
     bbox_to_anchor=(0, 0)  
@@ -584,7 +614,20 @@ def plot_deviation(subtree,
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='', s=2.5)
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
 
-    pyplot.margins(margins)
+    # add annotations for adjusted p-value
+    for label in df_true_melt_subset_sg['label'].values:
+        adj_p_val = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label][f'adj_p_val_{fdr_type}'].values[0]
+        val = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['z-score'].values[0]
+        null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null z-score mean'].values[0]
+        if val > null:
+            y_coord = val+max(df_true_melt_subset['z-score'])/10
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom')
+        else:
+            y_coord = val-max(df_true_melt_subset['z-score'])/10
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top')
+
+
+    pyplot.margins(x=0.05, y=0.15)
     pyplot.grid(True)
     ax.set_xticklabels([])
 
@@ -793,7 +836,9 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_c,
                 - null min (float): Minimum count across across all resamples.
                 - null mean (float): Average count across across all resamples.
                 - null max (float): Maximum count across across all resamples.
-                - adj_p_val (float): Adjusted p-value, one-sided test, corrected using the Bonferonni correction.
+                - p_val (float): p-value, one-sided test, not corrected for multiple hypotheses testing.
+                - adj_p_val_fdr_bh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction
+                - adj_p_val_fdr_tsbh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction with two stage linear step-up procedure
                 - dataset (string): Dataset label.
                 - null z-score min (float): Minimum z-score across across `num_null` random resamples.
                 - null z-score mean (float): Average z-score across across `num_null` random resamples.
@@ -876,7 +921,7 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_c,
         df_true_melt['null max'] = [df_melt.groupby(['subtree_val']).max(numeric_only=True).loc[i].values[0] for i in df_true_melt['subtree_val']]
         
         # calculate p-value (one-sided test)
-        adj_p_val_list = []
+        p_val_list = []
         for i, j in zip(df_true_melt['subtree_val'].values, df_true_melt['z-score'].values):
             resamples = dfs_c.iloc[i].values[:-1]
             actual = df_true_melt.loc[df_true_melt['subtree_val']==i]['observed'].values[0]
@@ -886,9 +931,11 @@ def multi_dataset_dfs_for_plotting(dfs_dataset_c,
                 pos = sum(resamples<=actual)
             elif j == 0:
                 pos=len(resamples)
-            p_val = pos/len(resamples)*len(df_true_melt)
-            adj_p_val_list.append(p_val)
-        df_true_melt['adj_p_val'] = adj_p_val_list
+            p_val = pos/len(resamples)
+            p_val_list.append(p_val)
+        df_true_melt['p_val'] = p_val_list
+        df_true_melt['adj_p_val_fdr_bh'] = multipletests(p_val_list, method='fdr_bh')[1]
+        df_true_melt['adj_p_val_fdr_tsbh'] = multipletests(p_val_list, method='fdr_tsbh')[1]
         df_true_melt['dataset'] = dataset_names[index]
         df_true_melt_list.append(df_true_melt)
         
@@ -1078,7 +1125,7 @@ def multi_dataset_plot_deviation(subtree,
         pyplot.scatter(x="label", y="z-score", data=df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset], color=dataset_color_dict[dataset], label=f'{dataset}', s=10, zorder=i*5)
         pyplot.plot(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['label'], df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['z-score'], color=dataset_color_dict[dataset], linewidth=0.75, zorder=i*10)
 
-    pyplot.margins(margins)
+    pyplot.margins(x=0.05, y=0.15)
     pyplot.grid(True)
     ax.set_xticklabels([])
 

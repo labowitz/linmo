@@ -4,3 +4,4 @@ tqdm
 colorcet
 seaborn
 matplotlib
+statsmodels
