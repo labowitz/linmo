@@ -372,9 +372,9 @@ def plot_frequency(subtree,
     ax.set_xticklabels([])
 
     if title == 'auto':
-        pyplot.title(f'{subtree.capitalize()} frequency', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+        pyplot.title(f'{subtree.capitalize()} frequency', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     else:
-        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     pyplot.ylabel('Counts', **{'fontname':'Arial', 'size':8})
     pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
@@ -632,9 +632,9 @@ def plot_deviation(subtree,
     ax.set_xticklabels([])
 
     if title == 'auto':
-        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     else:
-        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     pyplot.ylabel('z-score', **{'fontname':'Arial', 'size':8})
     pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
@@ -1122,17 +1122,18 @@ def multi_dataset_plot_deviation(subtree,
     pyplot.axhline(y=0, color='gray', linestyle='-', label='No deviation', zorder=1)
 
     for i, dataset in enumerate(dataset_names):
+        i+=1
         pyplot.scatter(x="label", y="z-score", data=df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset], color=dataset_color_dict[dataset], label=f'{dataset}', s=10, zorder=i*5)
-        pyplot.plot(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['label'], df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['z-score'], color=dataset_color_dict[dataset], linewidth=0.75, zorder=i*10)
+        pyplot.plot(df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['label'], df_true_melt_dataset_label_c_c.loc[df_true_melt_dataset_label_c_c['dataset']==dataset]['z-score'], color=dataset_color_dict[dataset], linewidth=0.75, zorder=1)
 
     pyplot.margins(x=0.05, y=0.15)
     pyplot.grid(True)
     ax.set_xticklabels([])
 
     if title == 'auto':
-        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     else:
-        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8}, fontweight='bold')
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     pyplot.ylabel('z-score', **{'fontname':'Arial', 'size':8})
     pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
