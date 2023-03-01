@@ -1,4 +1,4 @@
-# LMA - Lineage Motif Analysis
+# Lineage Motif Analysis (LMA)
 
 ![](assets/Fullsize_Fades.gif)
 <figure markdown>
@@ -7,7 +7,7 @@
 
 ## Table Of Contents
 
-This documentation provides a guide for using **Lineage Motif Analysis**, a computational tool which analyzes a set of lineage trees to identify patterns of correlated cell fates that represent building blocks of larger developmental programs. 
+This documentation provides a guide for using **Lineage Motif Analysis (LMA)**, a computational tool which analyzes a set of lineage trees to identify patterns of correlated cell fates that represent building blocks of larger developmental programs. 
 
 The walk-through consists of installation, API, and several tutorials, which showcase LMA applied to various lineage tree datasets.
 
