@@ -1,5 +1,5 @@
 """
-## lma.resample
+## lineage_motif.resample
 Provides functions for resampling tree datasets.
 
 This module contains the following functions:
