@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 
-with open("lma/__init__.py", "r") as f:
+with open("lineage-motifs/__init__.py", "r") as f:
     init = f.readlines()
 
 for line in init:
@@ -19,7 +19,7 @@ for line in init:
 
 
 setup(
-    name='lma',
+    name='lineage-motifs',
     version=__version__,
     author=__author__,
     author_email=__email__,
