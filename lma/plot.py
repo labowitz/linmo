@@ -1,5 +1,5 @@
 """
-## lineage-motifs.plot
+## lma.plot
 Provides functions for visualizing motif analysis.
 
 This module contains the following functions:
