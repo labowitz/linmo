@@ -13,7 +13,7 @@ The walk-through consists of installation, API, and several tutorials, which sho
 
 ## Project Overview
 
-::: lma
+::: lineage-motifs
 
 ## Acknowledgements
 
