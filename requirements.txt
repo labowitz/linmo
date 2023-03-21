@@ -5,3 +5,7 @@ colorcet
 seaborn
 matplotlib
 statsmodels
+jupyter
+ipywidgets 
+widgetsnbextension 
+pandas-profiling
