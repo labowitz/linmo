@@ -353,7 +353,7 @@ def plot_frequency(subtree,
     pyplot.scatter(x='label', y='null min', data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x='label', y='null max', data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x='label', y='observed', data=df_true_melt_subset, color='red', label='', s=2.5)
-    pyplot.scatter(x='label', y='observed', data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
+    #pyplot.scatter(x='label', y='observed', data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
 
     # add annotations for adjusted p-value
     for label in df_true_melt_subset_sg['label'].values:
@@ -362,10 +362,10 @@ def plot_frequency(subtree,
         null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null mean'].values[0]
         if val > null:
             y_coord = val+max(df_true_melt_subset['observed'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom')
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'Arial', 'size':8})
         else:
             y_coord = val-max(df_true_melt_subset['observed'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top')
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'Arial', 'size':8})
 
     pyplot.margins(x=0.05, y=0.15)
     pyplot.grid(True)
@@ -529,6 +529,65 @@ def plot_frequency(subtree,
             else:
                 pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
             
+    if subtree == 'asym_quartet':
+        for i in range(len(df_true_melt_subset['label'].values)):
+            c1_str = df_true_melt_subset['label'].values[i][1]
+            c2_str = df_true_melt_subset['label'].values[i][4]
+            c3_str = df_true_melt_subset['label'].values[i][7]
+            c4_str = df_true_melt_subset['label'].values[i][9]
+
+            x = i
+            y = -0.06
+            ax.add_artist(_make_circle(cell_color_dict[c1_str], 4.5, x, y, 0.4))
+            ax.annotate(c1_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})
+
+            x = i
+            y = -0.18
+            ax.add_artist(_make_circle(cell_color_dict[c2_str], 4.5, x, y, 0.4))
+            ax.annotate(c2_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})   
+
+            x = i
+            y = -0.30
+            ax.add_artist(_make_circle(cell_color_dict[c3_str], 4.5, x, y, 0.4))
+            ax.annotate(c3_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})  
+
+            x = i
+            y = -0.39
+            ax.add_artist(_make_circle(cell_color_dict[c4_str], 4.5, x, y, 0.4))
+            ax.annotate(c4_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})  
+            
+        if cutoff==None:
+            pyplot.xlabel(f'All {subtree} combinations', labelpad=60, **{'fontname':'Arial', 'size':8})
+        else:
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=60, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=60, **{'fontname':'Arial', 'size':8})
+            
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
 
@@ -612,7 +671,7 @@ def plot_deviation(subtree,
     pyplot.scatter(x="label", y="null z-score min", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="null z-score max", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='', s=2.5)
-    pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
+    #pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset_sg, color='red', s=25, alpha=0.35, label='Adjusted p-value < 0.05')
 
     # add annotations for adjusted p-value
     for label in df_true_melt_subset_sg['label'].values:
@@ -621,10 +680,10 @@ def plot_deviation(subtree,
         null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null z-score mean'].values[0]
         if val > null:
             y_coord = val+max(df_true_melt_subset['z-score'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom')
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'Arial', 'size':8})
         else:
             y_coord = val-max(df_true_melt_subset['z-score'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top')
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'Arial', 'size':8})
 
 
     pyplot.margins(x=0.05, y=0.15)
@@ -787,6 +846,65 @@ def plot_deviation(subtree,
                 pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
             else:
                 pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+            
+    if subtree == 'asym_quartet':
+        for i in range(len(df_true_melt_subset['label'].values)):
+            c1_str = df_true_melt_subset['label'].values[i][1]
+            c2_str = df_true_melt_subset['label'].values[i][4]
+            c3_str = df_true_melt_subset['label'].values[i][7]
+            c4_str = df_true_melt_subset['label'].values[i][9]
+
+            x = i
+            y = -0.06
+            ax.add_artist(_make_circle(cell_color_dict[c1_str], 4.5, x, y, 0.4))
+            ax.annotate(c1_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})
+
+            x = i
+            y = -0.18
+            ax.add_artist(_make_circle(cell_color_dict[c2_str], 4.5, x, y, 0.4))
+            ax.annotate(c2_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})   
+
+            x = i
+            y = -0.30
+            ax.add_artist(_make_circle(cell_color_dict[c3_str], 4.5, x, y, 0.4))
+            ax.annotate(c3_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})  
+
+            x = i
+            y = -0.39
+            ax.add_artist(_make_circle(cell_color_dict[c4_str], 4.5, x, y, 0.4))
+            ax.annotate(c4_str, 
+                        xy=(x, y), 
+                        verticalalignment="center", 
+                        horizontalalignment="center",
+                        annotation_clip=False, 
+                        xycoords=("data", "axes fraction"),
+                        **{'fontname':'Arial', 'size':8})  
+            
+        if cutoff==None:
+            pyplot.xlabel(f'All {subtree} combinations', labelpad=60, **{'fontname':'Arial', 'size':8})
+        else:
+            if multiple_datasets == False:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=60, **{'fontname':'Arial', 'size':8})
+            else:
+                pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=60, **{'fontname':'Arial', 'size':8})
             
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
