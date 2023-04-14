@@ -351,7 +351,7 @@ def _make_annotation(cell_color_dict, ax, label, subtree_type):
                     horizontalalignment="center",
                     annotation_clip=False, 
                     xycoords=("data", "axes fraction"),
-                    **{'fontname':'DejaVu Sans', 'size':8})
+                    **{'fontname':'Arial', 'size':8})
 
 def plot_frequency(subtree, 
                    df_true_melt_subset, 
@@ -443,24 +443,24 @@ def plot_frequency(subtree,
         null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null mean'].values[0]
         if val > null:
             y_coord = val+max(df_true_melt_subset['observed'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'', 'size':8})
         else:
             y_coord = val-max(df_true_melt_subset['observed'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'Arial', 'size':8})
 
     pyplot.margins(x=0.05, y=0.15)
     pyplot.grid(True)
     ax.set_xticklabels([])
 
     if title == 'auto':
-        pyplot.title(f'{subtree.capitalize()} frequency', y=1.02, **{'fontname':'DejaVu Sans', 'size':8})#, fontweight='bold')
+        pyplot.title(f'{subtree.capitalize()} frequency', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     else:
-        pyplot.title(f'{title}', y=1.02, **{'fontname':'DejaVu Sans', 'size':8})#, fontweight='bold')
-    pyplot.ylabel('Counts', **{'fontname':'DejaVu Sans', 'size':8})
-    pyplot.yticks(**{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
+    pyplot.ylabel('Counts', **{'fontname':'Arial', 'size':8})
+    pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
     if legend_bool == True:
-        legend_props = font_manager.FontProperties(family='DejaVu Sans', style='normal', size=6)
+        legend_props = font_manager.FontProperties(family='Arial', style='normal', size=6)
         if legend_pos == 'outside':
             pyplot.legend(loc='upper left', framealpha=1, prop=legend_props, bbox_to_anchor=(1.05,1.0))
         elif legend_pos == 'inside':
@@ -475,12 +475,12 @@ def plot_frequency(subtree,
     labelpad = df_annotations.loc[df_annotations['subtree_type']==subtree]['labelpad'].values[0]    
     
     if cutoff==None:
-        pyplot.xlabel(f'All {subtree} combinations', labelpad=labelpad, **{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.xlabel(f'All {subtree} combinations', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
     else:
         if multiple_datasets == False:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=labelpad, **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=labelpad, **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
 
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
@@ -574,10 +574,10 @@ def plot_deviation(subtree,
         null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null z-score mean'].values[0]
         if val > null:
             y_coord = val+max(df_true_melt_subset['z-score'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'Arial', 'size':8})
         else:
             y_coord = val-max(df_true_melt_subset['z-score'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'Arial', 'size':8})
 
 
     pyplot.margins(x=0.05, y=0.15)
@@ -585,14 +585,14 @@ def plot_deviation(subtree,
     ax.set_xticklabels([])
 
     if title == 'auto':
-        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'DejaVu Sans', 'size':8})#, fontweight='bold')
+        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     else:
-        pyplot.title(f'{title}', y=1.02, **{'fontname':'DejaVu Sans', 'size':8})#, fontweight='bold')
-    pyplot.ylabel('z-score', **{'fontname':'DejaVu Sans', 'size':8})
-    pyplot.yticks(**{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
+    pyplot.ylabel('z-score', **{'fontname':'Arial', 'size':8})
+    pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
     if legend_bool == True:
-        legend_props = font_manager.FontProperties(family='DejaVu Sans', style='normal', size=6)
+        legend_props = font_manager.FontProperties(family='Arial', style='normal', size=6)
         if legend_pos == 'outside':
             pyplot.legend(loc='upper left', framealpha=1, prop=legend_props, bbox_to_anchor=(1.05,1.0))
         elif legend_pos == 'inside':
@@ -606,12 +606,12 @@ def plot_deviation(subtree,
     labelpad = df_annotations.loc[df_annotations['subtree_type']==subtree]['labelpad'].values[0]    
     
     if cutoff==None:
-        pyplot.xlabel(f'All {subtree} combinations', labelpad=labelpad, **{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.xlabel(f'All {subtree} combinations', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
     else:
         if multiple_datasets == False:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=labelpad, **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score)', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
         else:
-            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=labelpad, **{'fontname':'DejaVu Sans', 'size':8})
+            pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {len(df_true_melt_subset)} by abs z-score across all datasets)', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
 
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
@@ -956,14 +956,14 @@ def multi_dataset_plot_deviation(subtree,
     ax.set_xticklabels([])
 
     if title == 'auto':
-        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'DejaVu Sans', 'size':8})#, fontweight='bold')
+        pyplot.title('Deviation from resamples', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
     else:
-        pyplot.title(f'{title}', y=1.02, **{'fontname':'DejaVu Sans', 'size':8})#, fontweight='bold')
-    pyplot.ylabel('z-score', **{'fontname':'DejaVu Sans', 'size':8})
-    pyplot.yticks(**{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.title(f'{title}', y=1.02, **{'fontname':'Arial', 'size':8})#, fontweight='bold')
+    pyplot.ylabel('z-score', **{'fontname':'Arial', 'size':8})
+    pyplot.yticks(**{'fontname':'Arial', 'size':8})
 
     if legend_bool == True:
-        legend_props = font_manager.FontProperties(family='DejaVu Sans', style='normal', size=6)
+        legend_props = font_manager.FontProperties(family='Arial', style='normal', size=6)
         if legend_pos == 'outside':
             pyplot.legend(loc='upper left', framealpha=1, prop=legend_props, bbox_to_anchor=(1.05,1.0))
         elif legend_pos == 'inside':
@@ -977,9 +977,9 @@ def multi_dataset_plot_deviation(subtree,
     labelpad = df_annotations.loc[df_annotations['subtree_type']==subtree]['labelpad'].values[0]    
     
     if cutoff==None:
-        pyplot.xlabel(f'All {subtree} combinations', labelpad=52.5, **{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.xlabel(f'All {subtree} combinations', labelpad=52.5, **{'fontname':'Arial', 'size':8})
     else:
-        pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=52.5, **{'fontname':'DejaVu Sans', 'size':8})
+        pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
 
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
