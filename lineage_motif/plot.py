@@ -305,15 +305,18 @@ subtree_type_list = ['doublet',
                      'triplet',
                      'quartet', 
                      'sextet',
+                     'octet',
                      'asym_quartet',
                      'asym_quintet',
                      'asym_sextet',
-                     'asym_septet']
+                     'asym_septet'
+                     ]
 
 index_list = [[1,3], 
               [1,4,6], 
               [2,4,8,10], 
               [2,4,9,11,15,17],
+              [3,5,9,11,17,19,23,25],
               [1,4,7,9], 
               [1,4,7,10,12], 
               [1,4,7,10,13,15], 
@@ -324,13 +327,14 @@ y_list = [[-0.06, -0.15],
           [-0.06, -0.18, -0.27],
           [-0.06, -0.15, -0.27, -0.36],
           [-0.06, -0.15, -0.27, -0.36, -0.45, -0.54],
+          [-0.06, -0.15, -0.24, -0.33, -0.45, -0.54, -0.63, -0.72],
           [-0.06, -0.18, -0.30, -0.39],
           [-0.06, -0.18, -0.30, -0.42, -0.51],
           [-0.06, -0.18, -0.30, -0.42, -0.54, -0.63],
           [-0.06, -0.18, -0.30, -0.42, -0.54, -0.66, -0.75],
          ]
 
-labelpad_list = [22.5, 40, 52.5, 80, 60, 80, 100, 120]
+labelpad_list = [22.5, 40, 52.5, 80, 120, 60, 80, 100, 120]
 
 df_annotations = pd.DataFrame({'subtree_type': subtree_type_list,
                                'index': index_list,
@@ -560,8 +564,8 @@ def plot_deviation(subtree,
                   size=0.5,
                  )
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='Observed count', s=2.5)
-    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='gray', label='Resampled datasets', s=2.5)
-    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='black', label=f'Average across {num_null} resamples', s=2.5)
+    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='gray', label=f'Null z-score across {num_null} resample datasets', s=2.5)
+    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='black', label=f'Average null z-score', s=2.5)
     pyplot.scatter(x="label", y="null z-score min", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="null z-score max", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='', s=2.5)

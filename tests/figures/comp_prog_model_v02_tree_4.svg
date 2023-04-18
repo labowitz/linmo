@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.3.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 93 108.4" style="enable-background:new 0 0 93 108.4;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+	.st1{stroke:#000000;stroke-width:0.8;stroke-linejoin:round;}
+	.st2{font-family:'ArialMT';}
+	.st3{font-size:8px;}
+	
+		.st4{clip-path:url(#SVGID_00000004538228148547305550000004077862396132201346_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;}
+	
+		.st5{clip-path:url(#SVGID_00000093898941674897505500000009577803504320119428_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;}
+	
+		.st6{clip-path:url(#SVGID_00000030452257408666397650000005182699394853107639_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;}
+	
+		.st7{clip-path:url(#SVGID_00000005251245698256668970000004258200382588679068_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;}
+	.st8{fill:none;stroke:#000000;stroke-width:0.8;stroke-linecap:square;}
+	.st9{fill:#DF8A34;}
+	.st10{font-size:9.6px;}
+</style>
+<g>
+	<path class="st0" d="M30,75.5h55.8V20.1H30V75.5z"/>
+	<g>
+		<g>
+			<path id="m6bc23f1cff" class="st1" d="M32.1,75.5V79"/>
+		</g>
+	</g>
+	<text transform="matrix(1 0 0 1 29.8865 88.2378)" class="st2 st3">0</text>
+	<g>
+		<g>
+			<path id="m6bc23f1cff_00000181065871049663959200000005880815136032364206_" class="st1" d="M75,75.5V79"/>
+		</g>
+	</g>
+	<text transform="matrix(1 0 0 1 72.8096 88.2378)" class="st2 st3">1</text>
+	<text transform="matrix(1 0 0 1 33.6248 99.554)" class="st2 st3">branch length</text>
+	<g>
+		<g>
+			<path id="ma8169cc3cd" class="st1" d="M30,37.1h-3.5"/>
+		</g>
+	</g>
+	<text transform="matrix(1 0 0 1 18.5158 39.9932)" class="st2 st3">1</text>
+	<g>
+		<g>
+			<path id="ma8169cc3cd_00000034061952516382871230000002621843370561286786_" class="st1" d="M30,58.5h-3.5"/>
+		</g>
+	</g>
+	<text transform="matrix(1 0 0 1 18.5158 61.3162)" class="st2 st3">2</text>
+	<text transform="matrix(6.123234e-17 -1 1 6.123234e-17 12.9263 55.3516)" class="st2 st3">taxa</text>
+	<g>
+		<defs>
+			<rect id="SVGID_1_" x="30" y="20.1" width="55.8" height="55.4"/>
+		</defs>
+		<clipPath id="SVGID_00000167379699595050394580000012610932002637879732_">
+			<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+		</clipPath>
+		
+			<path style="clip-path:url(#SVGID_00000167379699595050394580000012610932002637879732_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;" d="
+			M32.1,47.8L32.1,47.8"/>
+	</g>
+	<g>
+		<defs>
+			<rect id="SVGID_00000070803481065047622760000012115130519026432156_" x="30" y="20.1" width="55.8" height="55.4"/>
+		</defs>
+		<clipPath id="SVGID_00000114782324380164864880000001525023599006777258_">
+			<use xlink:href="#SVGID_00000070803481065047622760000012115130519026432156_"  style="overflow:visible;"/>
+		</clipPath>
+		
+			<path style="clip-path:url(#SVGID_00000114782324380164864880000001525023599006777258_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;" d="
+			M32.1,37.1H75"/>
+	</g>
+	<g>
+		<defs>
+			<rect id="SVGID_00000132789996191031718970000006125079972003748780_" x="30" y="20.1" width="55.8" height="55.4"/>
+		</defs>
+		<clipPath id="SVGID_00000000204222268440267180000001915545069958308016_">
+			<use xlink:href="#SVGID_00000132789996191031718970000006125079972003748780_"  style="overflow:visible;"/>
+		</clipPath>
+		
+			<path style="clip-path:url(#SVGID_00000000204222268440267180000001915545069958308016_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;" d="
+			M32.1,58.5H75"/>
+	</g>
+	<g>
+		<defs>
+			<rect id="SVGID_00000110428572605806244650000013380274652242086789_" x="30" y="20.1" width="55.8" height="55.4"/>
+		</defs>
+		<clipPath id="SVGID_00000105392686505082088110000001433844422760278154_">
+			<use xlink:href="#SVGID_00000110428572605806244650000013380274652242086789_"  style="overflow:visible;"/>
+		</clipPath>
+		
+			<path style="clip-path:url(#SVGID_00000105392686505082088110000001433844422760278154_);fill:none;stroke:#000000;stroke-width:1.5;stroke-linejoin:round;" d="
+			M32.1,58.5V37.1"/>
+	</g>
+	<path class="st8" d="M30,75.5V20.1"/>
+	<path class="st8" d="M85.8,75.5V20.1"/>
+	<path class="st8" d="M30,75.5h55.8"/>
+	<path class="st8" d="M30,20.1h55.8"/>
+	<text transform="matrix(1 0 0 1 75.0342 39.198)" class="st9 st2 st3">A</text>
+	<text transform="matrix(1 0 0 1 75.0342 60.5212)" class="st9 st2 st3">A</text>
+	<text transform="matrix(1 0 0 1 44.1705 14.0715)" class="st2 st10">Tree 4</text>
+</g>
+</svg>
