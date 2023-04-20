@@ -4,10 +4,12 @@ Provides functions for visualizing motif analysis.
 
 This module contains the following functions:
 
-- `dfs_for_plotting` - Takes DataFrame from resample_trees functions and returns DataFrame for plotting.
+- `dfs_for_plotting` - Takes DataFrame from `resample_trees` functions and returns DataFrame for plotting.
 - `make_cell_color_dict` - Returns cell color dictionary based on provided cell fates.
 - `plot_frequency` - Displays frequency plot of `cutoff` number of subtrees in original dataset and all resamples.
 - `plot_deviation` - Displays deviation plot of `cutoff` number of subtrees in original dataset and a subset of resamples.
+- `multi_dataset_dfs_for_plotting` - Takes DataFrame from `multi_dataset_resample_trees` function and returns DataFrames for plotting.
+- `multi_dataset_plot_deviation` - Displays deviation plot of `cutoff` number of subtrees in multiple datasets.
 """
 # +
 # packages for both analysis and plotting
@@ -71,9 +73,9 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
                 - null min (float): Minimum count across across all resamples.
                 - null mean (float): Average count across across all resamples.
                 - null max (float): Maximum count across across all resamples.
-                - p_val (float): p-value, one-sided test, not corrected for multiple hypotheses testing.
-                - adj_p_val_fdr_bh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction
-                - adj_p_val_fdr_tsbh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction with two stage linear step-up procedure
+                - p_val (float): p-value, one-sided test, not corrected for multiple hypotheses testing. 
+                - adj_p_val_fdr_bh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction. Automatically set to 1 if min_cell_types > 1.
+                - adj_p_val_fdr_tsbh (float): adjusted p-value, corrected using the Benjamini and Hochberg FDR correction with two stage linear step-up procedure. Automatically set to 1 if min_cell_types > 1.
                 - null z-score min (float): Minimum z-score across across `num_null` random resamples.
                 - null z-score mean (float): Average z-score across across `num_null` random resamples.
                 - null z-score max (float): Maximum z-score across across `num_null` random resamples.
@@ -201,8 +203,12 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
         p_val_list.append(p_val)
 
     df_true_melt_subset['p_val'] = p_val_list
-    df_true_melt_subset['adj_p_val_fdr_bh'] = multipletests(p_val_list, method='fdr_bh')[1]
-    df_true_melt_subset['adj_p_val_fdr_tsbh'] = multipletests(p_val_list, method='fdr_tsbh')[1]
+    if min_cell_types == 1:
+        df_true_melt_subset['adj_p_val_fdr_bh'] = multipletests(p_val_list, method='fdr_bh')[1]
+        df_true_melt_subset['adj_p_val_fdr_tsbh'] = multipletests(p_val_list, method='fdr_tsbh')[1]
+    elif min_cell_types > 1:
+        df_true_melt_subset['adj_p_val_fdr_bh'] = 1
+        df_true_melt_subset['adj_p_val_fdr_tsbh'] = 1
     
     # calculate deviation of each resample
     df_null_zscores_i_list = []

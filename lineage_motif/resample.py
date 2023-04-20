@@ -4,10 +4,18 @@ Provides functions for resampling tree datasets.
 
 This module contains the following functions:
 
+- `sort_align_tree` - Sorts and aligns trees.
 - `read_dataset` - Returns sorted tree dataset.
 - `resample_trees_doublets` - Returns subtree dictionary and DataFrame containing number of **doublets** across all resamples, the original trees, and the expected number (solved analytically).
 - `resample_trees_triplets` - Returns subtree dictionary and DataFrame containing number of **triplets** across all resamples, the original trees, and the expected number (solved analytically).
 - `resample_trees_quartets` - Returns subtree dictionary and DataFrame containing number of **quartets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_asym_quartets` - Returns subtree dictionary and DataFrame containing number of **asymmetric quartets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_asym_quintets` - Returns subtree dictionary and DataFrame containing number of **asymmetric quintets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_asym_sextets` - Returns subtree dictionary and DataFrame containing number of **asymmetric sextets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_asym_septets` - Returns subtree dictionary and DataFrame containing number of **asymmetric septets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_sextets` - Returns subtree dictionary and DataFrame containing number of **sextet** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_octets` - Returns subtree dictionary and DataFrame containing number of **octet** across all resamples, the original trees, and the expected number (solved analytically).
+- `multi_dataset_resample_trees` - Returns subtree dictionary and DataFrame containing number of a defined subtree type across all resamples, the original trees, and the expected number (solved analytically) across all datasets.
 """
 # +
 # packages for both resampling and plotting
@@ -201,9 +209,7 @@ def read_dataset(path):
     
     Returns:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric septets in (x,(x,(x,(x,(x,(x,x)))))) format, asymmetric sextets in (x,(x,(x,(x,(x,x))))) format, 
-            asymmetric quintets in (x,(x,(x,(x,x)))), asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     """
     with open(path) as f:
         lines = f.readlines()
@@ -214,7 +220,7 @@ def read_dataset(path):
 
 
 # +
-def make_cell_dict(cell_fates):
+def _make_cell_dict(cell_fates):
     """Makes a dictionary of all possible cell fates.
     
     Args:
@@ -232,7 +238,7 @@ def make_cell_dict(cell_fates):
 
 ### for doublet analysis
 
-def make_doublet_dict(cell_fates):
+def _make_doublet_dict(cell_fates):
     """Makes a dictionary of all possible doublets.
     
     Args:
@@ -261,8 +267,7 @@ def _flatten_doublets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         doublets (list): List with each entry as a doublet (string).
@@ -278,8 +283,7 @@ def _flatten_all_cells(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         all_cells (list): List with each entry as a cell (string).
@@ -292,13 +296,12 @@ def _flatten_all_cells(all_trees_sorted):
     return all_cells
 
 
-def make_df_doublets(all_trees_sorted, doublet_dict, resample, labels_bool=False):
+def _make_df_doublets(all_trees_sorted, doublet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all doublets in the set of trees provided.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         doublet_dict (dict): Keys are doublets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `doublet_dict` keys.
@@ -314,13 +317,12 @@ def make_df_doublets(all_trees_sorted, doublet_dict, resample, labels_bool=False
     return df_doublets
 
 
-def make_df_all_cells(all_trees_sorted, cell_dict, resample, labels_bool=False):
+def _make_df_all_cells(all_trees_sorted, cell_dict, resample, labels_bool=False):
     """Makes a DataFrame of all cells in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         cell_dict (dict): Keys are cell types, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `doublet_dict` keys.
@@ -452,8 +454,7 @@ def resample_trees_doublets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -475,17 +476,17 @@ def resample_trees_doublets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
         
-    doublet_dict = make_doublet_dict(cell_fates)
-    cell_dict = make_cell_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_doublets_new = []
-    df_doublets_true = make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
-    df_all_cells_true = make_df_all_cells(all_trees_sorted, cell_dict, 'observed', False)
+    df_doublets_true = _make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
+    df_all_cells_true = _make_df_all_cells(all_trees_sorted, cell_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -496,7 +497,7 @@ def resample_trees_doublets(all_trees_sorted,
             random.shuffle(all_cells_true)
             
         new_trees = [_replace_all(i, all_cells_true, replacement_bool) for i in all_trees_sorted]
-        df_doublets_new = make_df_doublets(new_trees, doublet_dict, resample, False)
+        df_doublets_new = _make_df_doublets(new_trees, doublet_dict, resample, False)
         dfs_doublets_new.append(df_doublets_new)
         
     dfs_c = _process_dfs_doublet(df_doublets_true, dfs_doublets_new, num_resamples, doublet_dict, cell_dict, df_all_cells_true, calc_expected=True)
@@ -505,7 +506,7 @@ def resample_trees_doublets(all_trees_sorted,
 
 ### for triplet analysis
 
-def make_triplet_dict(cell_fates):
+def _make_triplet_dict(cell_fates):
     """Makes a dictionary of all possible triplets.
     
     Args:
@@ -535,8 +536,7 @@ def _flatten_triplets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         triplets (list): List with each entry as a triplet (string).
@@ -568,8 +568,7 @@ def _flatten_non_doublets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         non_doublets (list): List with each entry as a non_doublet (string).
@@ -582,13 +581,12 @@ def _flatten_non_doublets(all_trees_sorted):
     return non_doublets
 
 
-def make_df_triplets(all_trees_sorted, triplet_dict, resample, labels_bool=False):
+def _make_df_triplets(all_trees_sorted, triplet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all triplets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         triplet_dict (dict): Keys are triplets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `triplet_dict` keys.
@@ -604,13 +602,12 @@ def make_df_triplets(all_trees_sorted, triplet_dict, resample, labels_bool=False
     return df_triplets
 
 
-def make_df_non_doublets(all_trees_sorted, cell_dict, resample, labels_bool=False):
+def _make_df_non_doublets(all_trees_sorted, cell_dict, resample, labels_bool=False):
     """Makes a DataFrame of all non_doublets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         cell_dict (dict): Keys are cell types, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `cell_dict` keys.
@@ -764,8 +761,7 @@ def resample_trees_triplets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -785,19 +781,19 @@ def resample_trees_triplets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
       
-    triplet_dict = make_triplet_dict(cell_fates)
-    doublet_dict = make_doublet_dict(cell_fates)
-    cell_dict = make_cell_dict(cell_fates)
+    triplet_dict = _make_triplet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_triplets_new = []
-    df_triplets_true = make_df_triplets(all_trees_sorted, triplet_dict, 'observed', False)
-    df_doublets_true = make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
-    df_non_doublets_true = make_df_non_doublets(all_trees_sorted, cell_dict, 'observed', False)
+    df_triplets_true = _make_df_triplets(all_trees_sorted, triplet_dict, 'observed', False)
+    df_doublets_true = _make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
+    df_non_doublets_true = _make_df_non_doublets(all_trees_sorted, cell_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -815,7 +811,7 @@ def resample_trees_triplets(all_trees_sorted,
         new_trees_2 = [_replace_all(i, non_doublets_true, replacement_bool) for i in new_trees_1]
         # then, replace the symbols
         new_trees_3 = [_replace_symbols(i, doublets_true, replacement_bool) for i in new_trees_2]
-        df_triplets_new = make_df_triplets(new_trees_3, triplet_dict, resample, False)
+        df_triplets_new = _make_df_triplets(new_trees_3, triplet_dict, resample, False)
         dfs_triplets_new.append(df_triplets_new)
         
     dfs_c = _process_dfs_triplet(df_triplets_true, dfs_triplets_new, num_resamples, triplet_dict, doublet_dict, cell_dict, df_doublets_true, df_non_doublets_true, calc_expected)
@@ -824,7 +820,7 @@ def resample_trees_triplets(all_trees_sorted,
 
 ### for quartet analysis
 
-def make_quartet_dict(cell_fates):
+def _make_quartet_dict(cell_fates):
     """Makes a dictionary of all possible quartets.
     
     Args:
@@ -834,7 +830,7 @@ def make_quartet_dict(cell_fates):
         quartet_dict (dict): Keys are quartets, values are integers.
     """
 
-    doublet_dict = make_doublet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
     z = [sorted([i, j]) for i in list(doublet_dict.keys()) for j in list(doublet_dict.keys())]
     x = [f'({i[0]},{i[1]})' for i in z]
 
@@ -855,8 +851,7 @@ def _flatten_quartets(all_trees):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         quartets (list): List with each entry as a quartet (string).
@@ -867,13 +862,12 @@ def _flatten_quartets(all_trees):
     return quartets
 
 
-def make_df_quartets(all_trees_sorted, quartet_dict, resample, labels_bool=False):
+def _make_df_quartets(all_trees_sorted, quartet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all quartets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         quartet_dict (dict): Keys are quartets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `quartet_dict` keys.
@@ -1003,8 +997,7 @@ def resample_trees_quartets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -1026,17 +1019,17 @@ def resample_trees_quartets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
       
-    quartet_dict = make_quartet_dict(cell_fates)
-    doublet_dict = make_doublet_dict(cell_fates)
+    quartet_dict = _make_quartet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_quartets_new = []
-    df_quartets_true = make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
-    df_doublets_true = make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
+    df_quartets_true = _make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
+    df_doublets_true = _make_df_doublets(all_trees_sorted, doublet_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -1047,7 +1040,7 @@ def resample_trees_quartets(all_trees_sorted,
             random.shuffle(doublets_true)
         
         new_trees = [_replace_doublets(i, doublets_true, replacement_bool) for i in all_trees_sorted]
-        df_quartets_new = make_df_quartets(new_trees, quartet_dict, resample, False)
+        df_quartets_new = _make_df_quartets(new_trees, quartet_dict, resample, False)
         dfs_quartets_new.append(df_quartets_new)
         
     dfs_c = _process_dfs_quartet(df_quartets_true, dfs_quartets_new, num_resamples, quartet_dict, doublet_dict, df_doublets_true, calc_expected)
@@ -1056,7 +1049,7 @@ def resample_trees_quartets(all_trees_sorted,
 
 ### for asymmetric quartet analysis
 
-def make_asym_quartet_dict(cell_fates):
+def _make_asym_quartet_dict(cell_fates):
     """Makes a dictionary of all possible asymmetric quartets.
     
     Args:
@@ -1102,8 +1095,7 @@ def _flatten_non_triplets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         non_triplets (list): List with each entry as a non_triplet (string).
@@ -1121,8 +1113,7 @@ def _flatten_asym_quartets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         asym_quartets (list): List with each entry as an asymmetric quartet (string).
@@ -1232,13 +1223,12 @@ def _process_dfs_asym_quartet(df_asym_quartets_true, dfs_asym_quartets_new, num_
     
     return dfs_c
 
-def make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, resample, labels_bool=False):
+def _make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all asym_quartets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         asym_quartet_dict (dict): Keys are asym_quartets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `asym_quartet_dict` keys.
@@ -1253,13 +1243,12 @@ def make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, resample, labels_
         df_asym_quartets = df_asym_quartets.rename({v: k for k, v in asym_quartet_dict.items()})
     return df_asym_quartets
 
-def make_df_non_triplets(all_trees_sorted, cell_dict, resample, labels_bool=False):
+def _make_df_non_triplets(all_trees_sorted, cell_dict, resample, labels_bool=False):
     """Makes a DataFrame of all non_triplets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         cell_dict (dict): Keys are cell types, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `cell_dict` keys.
@@ -1289,8 +1278,7 @@ def resample_trees_asym_quartets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -1310,19 +1298,19 @@ def resample_trees_asym_quartets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
       
-    asym_quartet_dict = make_asym_quartet_dict(cell_fates)
-    triplet_dict = make_triplet_dict(cell_fates)
-    cell_dict = make_cell_dict(cell_fates)
+    asym_quartet_dict = _make_asym_quartet_dict(cell_fates)
+    triplet_dict = _make_triplet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_asym_quartets_new = []
-    df_asym_quartets_true = make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, 'observed', False)
-    df_triplets_true = make_df_triplets(all_trees_sorted, triplet_dict, 'observed', False)
-    df_non_triplets_true = make_df_non_triplets(all_trees_sorted, cell_dict, 'observed', False)
+    df_asym_quartets_true = _make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, 'observed', False)
+    df_triplets_true = _make_df_triplets(all_trees_sorted, triplet_dict, 'observed', False)
+    df_non_triplets_true = _make_df_non_triplets(all_trees_sorted, cell_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -1340,7 +1328,7 @@ def resample_trees_asym_quartets(all_trees_sorted,
         new_trees_2 = [_replace_all(i, non_triplets_true, replacement_bool) for i in new_trees_1]
         # then, replace the symbols
         new_trees_3 = [_replace_symbols(i, triplets_true, replacement_bool) for i in new_trees_2]
-        df_asym_quartets_new = make_df_asym_quartets(new_trees_3, asym_quartet_dict, resample, False)
+        df_asym_quartets_new = _make_df_asym_quartets(new_trees_3, asym_quartet_dict, resample, False)
         dfs_asym_quartets_new.append(df_asym_quartets_new)
         
     dfs_c = _process_dfs_asym_quartet(df_asym_quartets_true, dfs_asym_quartets_new, num_resamples, asym_quartet_dict, triplet_dict, cell_dict, df_triplets_true, df_non_triplets_true, calc_expected)
@@ -1349,7 +1337,7 @@ def resample_trees_asym_quartets(all_trees_sorted,
 
 ### for asymmetric quintet analysis
 
-def make_asym_quintet_dict(cell_fates):
+def _make_asym_quintet_dict(cell_fates):
     """Makes a dictionary of all possible asymmetric quintets.
     
     Args:
@@ -1395,8 +1383,7 @@ def _flatten_non_asym_quartets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quintets in (x,(x,(x,(x,x)))) format, asymmetric quartets in (x,(x,(x,x))) format, 
-            triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         non_asym_quartets (list): List with each entry as a non_asym_quartet (string).
@@ -1414,8 +1401,7 @@ def _flatten_asym_quintets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quintets in (x,(x,(x,(x,x)))) format, asymmetric quartets in (x,(x,(x,x))) format, 
-            triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         asym_quintets (list): List with each entry as an asymmetric quartet (string).
@@ -1525,13 +1511,12 @@ def _process_dfs_asym_quintet(df_asym_quintets_true, dfs_asym_quintets_new, num_
     
     return dfs_c
 
-def make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, resample, labels_bool=False):
+def _make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all asym_quintets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quintets in (x,(x,(x,(x,x)))) format, asymmetric quartets in (x,(x,(x,x))) format, 
-            triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         asym_quintet_dict (dict): Keys are asym_quintets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `asym_quintet_dict` keys.
@@ -1546,13 +1531,12 @@ def make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, resample, labels_
         df_asym_quintets = df_asym_quintets.rename({v: k for k, v in asym_quintet_dict.items()})
     return df_asym_quintets
 
-def make_df_non_asym_quartets(all_trees_sorted, cell_dict, resample, labels_bool=False):
+def _make_df_non_asym_quartets(all_trees_sorted, cell_dict, resample, labels_bool=False):
     """Makes a DataFrame of all non_asym_quartets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quintets in (x,(x,(x,(x,x)))) format, asymmetric quartets in (x,(x,(x,x))) format, 
-            triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         cell_dict (dict): Keys are cell types, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `cell_dict` keys.
@@ -1582,8 +1566,7 @@ def resample_trees_asym_quintets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quintets in (x,(x,(x,(x,x)))) format, asymmetric quartets in (x,(x,(x,x))) format, 
-            triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -1603,19 +1586,19 @@ def resample_trees_asym_quintets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
-        print('warning, make_subtree_dict functions can only handle 10 cell fates max!')
+        print('warning, _make_subtree_dict functions can only handle 10 cell fates max!')
       
-    asym_quintet_dict = make_asym_quintet_dict(cell_fates)
-    asym_quartet_dict = make_asym_quartet_dict(cell_fates)
-    cell_dict = make_cell_dict(cell_fates)
+    asym_quintet_dict = _make_asym_quintet_dict(cell_fates)
+    asym_quartet_dict = _make_asym_quartet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_asym_quintets_new = []
-    df_asym_quintets_true = make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, 'observed', False)
-    df_asym_quartets_true = make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, 'observed', False)
-    df_non_asym_quartets_true = make_df_non_asym_quartets(all_trees_sorted, cell_dict, 'observed', False)
+    df_asym_quintets_true = _make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, 'observed', False)
+    df_asym_quartets_true = _make_df_asym_quartets(all_trees_sorted, asym_quartet_dict, 'observed', False)
+    df_non_asym_quartets_true = _make_df_non_asym_quartets(all_trees_sorted, cell_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -1633,7 +1616,7 @@ def resample_trees_asym_quintets(all_trees_sorted,
         new_trees_2 = [_replace_all(i, non_asym_quartets_true, replacement_bool) for i in new_trees_1]
         # then, replace the symbols
         new_trees_3 = [_replace_symbols(i, asym_quartets_true, replacement_bool) for i in new_trees_2]
-        df_asym_quintets_new = make_df_asym_quintets(new_trees_3, asym_quintet_dict, resample, False)
+        df_asym_quintets_new = _make_df_asym_quintets(new_trees_3, asym_quintet_dict, resample, False)
         dfs_asym_quintets_new.append(df_asym_quintets_new)
         
     dfs_c = _process_dfs_asym_quintet(df_asym_quintets_true, dfs_asym_quintets_new, num_resamples, asym_quintet_dict, asym_quartet_dict, cell_dict, df_asym_quartets_true, df_non_asym_quartets_true, calc_expected)
@@ -1642,7 +1625,7 @@ def resample_trees_asym_quintets(all_trees_sorted,
 
 ### for asymmetric sextet analysis
 
-def make_asym_sextet_dict(cell_fates):
+def _make_asym_sextet_dict(cell_fates):
     """Makes a dictionary of all possible asymmetric sextets.
     
     Args:
@@ -1689,8 +1672,7 @@ def _flatten_non_asym_quintets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric sextets in (x,(x,(x,(x,(x,x))))) format, asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         non_asym_quintets (list): List with each entry as a non_asym_quintet (string).
@@ -1708,8 +1690,7 @@ def _flatten_asym_sextets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric sextets in (x,(x,(x,(x,(x,x))))) format, asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         asym_sextets (list): List with each entry as an asymmetric quintet (string).
@@ -1819,13 +1800,12 @@ def _process_dfs_asym_sextet(df_asym_sextets_true, dfs_asym_sextets_new, num_res
     
     return dfs_c
 
-def make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, resample, labels_bool=False):
+def _make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all asym_sextets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric sextets in (x,(x,(x,(x,(x,x))))) format, asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         asym_sextet_dict (dict): Keys are asym_sextets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `asym_sextet_dict` keys.
@@ -1840,13 +1820,12 @@ def make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, resample, labels_bo
         df_asym_sextets = df_asym_sextets.rename({v: k for k, v in asym_sextet_dict.items()})
     return df_asym_sextets
 
-def make_df_non_asym_quintets(all_trees_sorted, cell_dict, resample, labels_bool=False):
+def _make_df_non_asym_quintets(all_trees_sorted, cell_dict, resample, labels_bool=False):
     """Makes a DataFrame of all non_asym_quintets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric sextets in (x,(x,(x,(x,(x,x))))) format, asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         cell_dict (dict): Keys are cell types, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `cell_dict` keys.
@@ -1876,8 +1855,7 @@ def resample_trees_asym_sextets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric sextets in (x,(x,(x,(x,(x,x))))) format, asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -1897,19 +1875,19 @@ def resample_trees_asym_sextets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
-        print('warning, make_subtree_dict functions can only handle 10 cell fates max!')
+        print('warning, _make_subtree_dict functions can only handle 10 cell fates max!')
       
-    asym_sextet_dict = make_asym_sextet_dict(cell_fates)
-    asym_quintet_dict = make_asym_quintet_dict(cell_fates)
-    cell_dict = make_cell_dict(cell_fates)
+    asym_sextet_dict = _make_asym_sextet_dict(cell_fates)
+    asym_quintet_dict = _make_asym_quintet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_asym_sextets_new = []
-    df_asym_sextets_true = make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, 'observed', False)
-    df_asym_quintets_true = make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, 'observed', False)
-    df_non_asym_quintets_true = make_df_non_asym_quintets(all_trees_sorted, cell_dict, 'observed', False)
+    df_asym_sextets_true = _make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, 'observed', False)
+    df_asym_quintets_true = _make_df_asym_quintets(all_trees_sorted, asym_quintet_dict, 'observed', False)
+    df_non_asym_quintets_true = _make_df_non_asym_quintets(all_trees_sorted, cell_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -1927,7 +1905,7 @@ def resample_trees_asym_sextets(all_trees_sorted,
         new_trees_2 = [_replace_all(i, non_asym_quintets_true, replacement_bool) for i in new_trees_1]
         # then, replace the symbols
         new_trees_3 = [_replace_symbols(i, asym_quintets_true, replacement_bool) for i in new_trees_2]
-        df_asym_sextets_new = make_df_asym_sextets(new_trees_3, asym_sextet_dict, resample, False)
+        df_asym_sextets_new = _make_df_asym_sextets(new_trees_3, asym_sextet_dict, resample, False)
         dfs_asym_sextets_new.append(df_asym_sextets_new)
         
     dfs_c = _process_dfs_asym_sextet(df_asym_sextets_true, dfs_asym_sextets_new, num_resamples, asym_sextet_dict, asym_quintet_dict, cell_dict, df_asym_quintets_true, df_non_asym_quintets_true, calc_expected)
@@ -1936,7 +1914,7 @@ def resample_trees_asym_sextets(all_trees_sorted,
 
 ### for asymmetric septet analysis
 
-def make_asym_septet_dict(cell_fates):
+def _make_asym_septet_dict(cell_fates):
     """Makes a dictionary of all possible asymmetric septets.
     
     Args:
@@ -1984,9 +1962,7 @@ def _flatten_non_asym_sextets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric septets in (x,(x,(x,(x,(x,(x,x)))))) format, 
-            asymmetric sextets in (x,(x,(x,(x,(x,x))))), asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         non_asym_sextets (list): List with each entry as a non_asym_sextet (string).
@@ -2004,9 +1980,7 @@ def _flatten_asym_septets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric septets in (x,(x,(x,(x,(x,(x,x)))))) format, 
-            asymmetric sextets in (x,(x,(x,(x,(x,x))))), asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         asym_septets (list): List with each entry as an asymmetric sextet (string).
@@ -2116,14 +2090,12 @@ def _process_dfs_asym_septet(df_asym_septets_true, dfs_asym_septets_new, num_res
     
     return dfs_c
 
-def make_df_asym_septets(all_trees_sorted, asym_septet_dict, resample, labels_bool=False):
+def _make_df_asym_septets(all_trees_sorted, asym_septet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all asym_septets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric septets in (x,(x,(x,(x,(x,(x,x)))))) format, 
-            asymmetric sextets in (x,(x,(x,(x,(x,x))))), asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         asym_septet_dict (dict): Keys are asym_septets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `asym_septet_dict` keys.
@@ -2138,14 +2110,12 @@ def make_df_asym_septets(all_trees_sorted, asym_septet_dict, resample, labels_bo
         df_asym_septets = df_asym_septets.rename({v: k for k, v in asym_septet_dict.items()})
     return df_asym_septets
 
-def make_df_non_asym_sextets(all_trees_sorted, cell_dict, resample, labels_bool=False):
+def _make_df_non_asym_sextets(all_trees_sorted, cell_dict, resample, labels_bool=False):
     """Makes a DataFrame of all non_asym_sextets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric septets in (x,(x,(x,(x,(x,(x,x)))))) format, 
-            asymmetric sextets in (x,(x,(x,(x,(x,x))))), asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         cell_dict (dict): Keys are cell types, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `cell_dict` keys.
@@ -2175,9 +2145,7 @@ def resample_trees_asym_septets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric septets in (x,(x,(x,(x,(x,(x,x)))))) format, 
-            asymmetric sextets in (x,(x,(x,(x,(x,x))))), asymmetric quintets in (x,(x,(x,(x,x))))
-            asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -2197,19 +2165,19 @@ def resample_trees_asym_septets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
-        print('warning, make_subtree_dict functions can only handle 10 cell fates max!')
+        print('warning, _make_subtree_dict functions can only handle 10 cell fates max!')
       
-    asym_septet_dict = make_asym_septet_dict(cell_fates)
-    asym_sextet_dict = make_asym_sextet_dict(cell_fates)
-    cell_dict = make_cell_dict(cell_fates)
+    asym_septet_dict = _make_asym_septet_dict(cell_fates)
+    asym_sextet_dict = _make_asym_sextet_dict(cell_fates)
+    cell_dict = _make_cell_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_asym_septets_new = []
-    df_asym_septets_true = make_df_asym_septets(all_trees_sorted, asym_septet_dict, 'observed', False)
-    df_asym_sextets_true = make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, 'observed', False)
-    df_non_asym_sextets_true = make_df_non_asym_sextets(all_trees_sorted, cell_dict, 'observed', False)
+    df_asym_septets_true = _make_df_asym_septets(all_trees_sorted, asym_septet_dict, 'observed', False)
+    df_asym_sextets_true = _make_df_asym_sextets(all_trees_sorted, asym_sextet_dict, 'observed', False)
+    df_non_asym_sextets_true = _make_df_non_asym_sextets(all_trees_sorted, cell_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -2227,7 +2195,7 @@ def resample_trees_asym_septets(all_trees_sorted,
         new_trees_2 = [_replace_all(i, non_asym_sextets_true, replacement_bool) for i in new_trees_1]
         # then, replace the symbols
         new_trees_3 = [_replace_symbols(i, asym_sextets_true, replacement_bool) for i in new_trees_2]
-        df_asym_septets_new = make_df_asym_septets(new_trees_3, asym_septet_dict, resample, False)
+        df_asym_septets_new = _make_df_asym_septets(new_trees_3, asym_septet_dict, resample, False)
         dfs_asym_septets_new.append(df_asym_septets_new)
         
     dfs_c = _process_dfs_asym_septet(df_asym_septets_true, dfs_asym_septets_new, num_resamples, asym_septet_dict, asym_sextet_dict, cell_dict, df_asym_sextets_true, df_non_asym_sextets_true, calc_expected)
@@ -2236,7 +2204,7 @@ def resample_trees_asym_septets(all_trees_sorted,
 
 ### for sextet analysis
 
-def make_sextet_dict(cell_fates):
+def _make_sextet_dict(cell_fates):
     """Makes a dictionary of all possible sextets.
     
     Args:
@@ -2246,8 +2214,8 @@ def make_sextet_dict(cell_fates):
         sextet_dict (dict): Keys are sextets, values are integers.
     """
 
-    doublet_dict = make_doublet_dict(cell_fates)
-    quartet_dict = make_quartet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
+    quartet_dict = _make_quartet_dict(cell_fates)
     
     sextet_combinations = []
     for i in doublet_dict.keys():
@@ -2281,8 +2249,7 @@ def _flatten_doublets_non_quartets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all sextets in ((x,x),((x,x),(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         doublets_non_quartets (list): List with each entry as a doublet_non_quartet (string).
@@ -2299,8 +2266,7 @@ def _flatten_sextets(all_trees_sorted):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all sextets in ((x,x),((x,x),(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         sextets (list): List with each entry as an asymmetric quartet (string).
@@ -2410,13 +2376,12 @@ def _process_dfs_sextet(df_sextets_true, dfs_sextets_new, num_resamples, sextet_
     
     return dfs_c
 
-def make_df_sextets(all_trees_sorted, sextet_dict, resample, labels_bool=False):
+def _make_df_sextets(all_trees_sorted, sextet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all sextets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all sextets in ((x,x),((x,x),(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         sextet_dict (dict): Keys are sextets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `sextet_dict` keys.
@@ -2431,13 +2396,12 @@ def make_df_sextets(all_trees_sorted, sextet_dict, resample, labels_bool=False):
         df_sextets = df_sextets.rename({v: k for k, v in sextet_dict.items()})
     return df_sextets
 
-def make_df_doublets_non_quartets(all_trees_sorted, doublet_dict, resample, labels_bool=False):
+def _make_df_doublets_non_quartets(all_trees_sorted, doublet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all doublets_non_quartets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all sextets in ((x,x),((x,x),(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         doublet_dict (dict): Keys are doublets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): If True, then index of resulting DataFrame uses `doublet_dict` keys.
@@ -2467,8 +2431,7 @@ def resample_trees_sextets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all sextets in ((x,x),((x,x),(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -2488,19 +2451,19 @@ def resample_trees_sextets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
       
-    sextet_dict = make_sextet_dict(cell_fates)
-    quartet_dict = make_quartet_dict(cell_fates)
-    doublet_dict = make_doublet_dict(cell_fates)
+    sextet_dict = _make_sextet_dict(cell_fates)
+    quartet_dict = _make_quartet_dict(cell_fates)
+    doublet_dict = _make_doublet_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_sextets_new = []
-    df_sextets_true = make_df_sextets(all_trees_sorted, sextet_dict, 'observed', False)
-    df_quartets_true = make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
-    df_doublets_non_quartets_true = make_df_doublets_non_quartets(all_trees_sorted, doublet_dict, 'observed', False)
+    df_sextets_true = _make_df_sextets(all_trees_sorted, sextet_dict, 'observed', False)
+    df_quartets_true = _make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
+    df_doublets_non_quartets_true = _make_df_doublets_non_quartets(all_trees_sorted, doublet_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -2518,7 +2481,7 @@ def resample_trees_sextets(all_trees_sorted,
         new_trees_2 = [_replace_doublets(i, doublets_non_quartets_true, replacement_bool) for i in new_trees_1]
         # then, replace the symbols
         new_trees_3 = [_replace_symbols(i, quartets_true, replacement_bool) for i in new_trees_2]
-        df_sextets_new = make_df_sextets(new_trees_3, sextet_dict, resample, False)
+        df_sextets_new = _make_df_sextets(new_trees_3, sextet_dict, resample, False)
         dfs_sextets_new.append(df_sextets_new)
         
     dfs_c = _process_dfs_sextet(df_sextets_true, dfs_sextets_new, num_resamples, sextet_dict, quartet_dict, doublet_dict, df_quartets_true, df_doublets_non_quartets_true, calc_expected)
@@ -2527,7 +2490,7 @@ def resample_trees_sextets(all_trees_sorted,
 
 ### for octet analysis
 
-def make_octet_dict(cell_fates):
+def _make_octet_dict(cell_fates):
     """Makes a dictionary of all possible octets.
     
     Args:
@@ -2537,7 +2500,7 @@ def make_octet_dict(cell_fates):
         octet_dict (dict): Keys are octets, values are integers.
     """
 
-    quartet_dict = make_quartet_dict(cell_fates)
+    quartet_dict = _make_quartet_dict(cell_fates)
     z = [sorted([i, j]) for i in list(quartet_dict.keys()) for j in list(quartet_dict.keys())]
     x = [f'({i[0]},{i[1]})' for i in z]
 
@@ -2558,8 +2521,7 @@ def _flatten_octets(all_trees):
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
     
     Returns:
         octets (list): List with each entry as a octet (string).
@@ -2570,13 +2532,12 @@ def _flatten_octets(all_trees):
     return octets
 
 
-def make_df_octets(all_trees_sorted, octet_dict, resample, labels_bool=False):
+def _make_df_octets(all_trees_sorted, octet_dict, resample, labels_bool=False):
     """Makes a DataFrame of all octets in the set of trees.
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         octet_dict (dict): Keys are octets, values are integers.
         resample (int): Resample number.
         labels_bool (bool, optional): if True, then index of resulting DataFrame uses `octet_dict` keys.
@@ -2706,8 +2667,7 @@ def resample_trees_octets(all_trees_sorted,
     
     Args:
         all_trees_sorted (list): List where each entry is a string representing a tree in NEWICK format. 
-            Trees are sorted to have all asymmetric quartets in (x,(x,(x,x))) format, triplets in (x,(x,x)) format, 
-            and all octets/quartets/doublets in alphabetical order.
+            Trees are sorted using the `sort_align_tree` function.
         num_resamples (int, optional): Number of resample datasets.
         replacement_bool (bool, optional): Sample cells with or without replacement drawing from the pool of all cells.
         cell_fates (string or list, optional): If 'auto' (i.e. not provided by user), automatically determined 
@@ -2729,17 +2689,17 @@ def resample_trees_octets(all_trees_sorted,
     if cell_fates == 'auto':
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted for i in sublist])))))
     
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
       
-    octet_dict = make_octet_dict(cell_fates)
-    quartet_dict = make_quartet_dict(cell_fates)
+    octet_dict = _make_octet_dict(cell_fates)
+    quartet_dict = _make_quartet_dict(cell_fates)
     
     # store result for each rearrangement in dfs list
     dfs_octets_new = []
-    df_octets_true = make_df_octets(all_trees_sorted, octet_dict, 'observed', False)
-    df_quartets_true = make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
+    df_octets_true = _make_df_octets(all_trees_sorted, octet_dict, 'observed', False)
+    df_quartets_true = _make_df_quartets(all_trees_sorted, quartet_dict, 'observed', False)
 
     # rearrange leaves num_resamples times
     for resample in tqdm(range(0, num_resamples)):
@@ -2750,7 +2710,7 @@ def resample_trees_octets(all_trees_sorted,
             random.shuffle(quartets_true)
         
         new_trees = [_replace_quartets(i, quartets_true, replacement_bool) for i in all_trees_sorted]
-        df_octets_new = make_df_octets(new_trees, octet_dict, resample, False)
+        df_octets_new = _make_df_octets(new_trees, octet_dict, resample, False)
         dfs_octets_new.append(df_octets_new)
         
     dfs_c = _process_dfs_octet(df_octets_true, dfs_octets_new, num_resamples, octet_dict, quartet_dict, df_quartets_true, calc_expected)
@@ -2805,7 +2765,7 @@ def multi_dataset_resample_trees(datasets,
         all_trees_sorted_list_flattened = [i for sublist in all_trees_sorted_list for i in sublist]
         cell_fates = sorted(list(np.unique(re.findall('[A-Z]', ''.join([i for sublist in all_trees_sorted_list_flattened for i in sublist])))))
 
-    # make_subtree_dict functions can only handle 10 cell fates max
+    # _make_subtree_dict functions can only handle 10 cell fates max
     if len(cell_fates)>10:
         print('warning!')
         
