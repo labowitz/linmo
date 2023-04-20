@@ -5,3 +5,4 @@ reference for the technical implementation of the
 
 ::: lineage_motif.resample
 ::: lineage_motif.plot
+::: lineage_motif.simulate

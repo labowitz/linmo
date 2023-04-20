@@ -13,8 +13,8 @@ This module contains the following functions:
 - `resample_trees_asym_quintets` - Returns subtree dictionary and DataFrame containing number of **asymmetric quintets** across all resamples, the original trees, and the expected number (solved analytically).
 - `resample_trees_asym_sextets` - Returns subtree dictionary and DataFrame containing number of **asymmetric sextets** across all resamples, the original trees, and the expected number (solved analytically).
 - `resample_trees_asym_septets` - Returns subtree dictionary and DataFrame containing number of **asymmetric septets** across all resamples, the original trees, and the expected number (solved analytically).
-- `resample_trees_sextets` - Returns subtree dictionary and DataFrame containing number of **sextet** across all resamples, the original trees, and the expected number (solved analytically).
-- `resample_trees_octets` - Returns subtree dictionary and DataFrame containing number of **octet** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_sextets` - Returns subtree dictionary and DataFrame containing number of **sextets** across all resamples, the original trees, and the expected number (solved analytically).
+- `resample_trees_octets` - Returns subtree dictionary and DataFrame containing number of **octets** across all resamples, the original trees, and the expected number (solved analytically).
 - `multi_dataset_resample_trees` - Returns subtree dictionary and DataFrame containing number of a defined subtree type across all resamples, the original trees, and the expected number (solved analytically) across all datasets.
 """
 # +

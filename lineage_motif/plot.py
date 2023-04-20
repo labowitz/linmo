@@ -453,7 +453,7 @@ def plot_frequency(subtree,
         null = df_true_melt_subset_sg.loc[df_true_melt_subset_sg['label']==label]['null mean'].values[0]
         if val > null:
             y_coord = val+max(df_true_melt_subset['observed'])/10
-            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'', 'size':8})
+            pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='bottom', **{'fontname':'Arial', 'size':8})
         else:
             y_coord = val-max(df_true_melt_subset['observed'])/10
             pyplot.annotate(_annot(adj_p_val), xy=(label, y_coord), ha='center', va='top', **{'fontname':'Arial', 'size':8})
@@ -504,7 +504,6 @@ def plot_deviation(subtree,
                    cutoff='auto', 
                    title='auto',
                    multiple_datasets=False,
-                   num_null=1000,
                    legend_bool=True,
                    legend_pos='outside',
                    save=False, 
@@ -534,7 +533,6 @@ def plot_deviation(subtree,
             If NoneType, take all subtrees.
         title (string, optional): Title to use for plot. If not provided explicitly, will be automatically determined to read `subtree` frequency.
         multiple_datasets (bool, optional): Modify x-axis label depending if single or multiple datasets were used.
-        num_null (int, optional): Number of resamples used to calculate z-scores as part of null distribution.    
         legend_bool (bool, optional): Include legend in plot.
         legend_pos (string, optional): Position of legend (outside or inside).
         save (bool, optional): If True, save figure as file.
@@ -570,7 +568,7 @@ def plot_deviation(subtree,
                   size=0.5,
                  )
     pyplot.scatter(x="label", y="z-score", data=df_true_melt_subset, color='red', label='Observed count', s=2.5)
-    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='gray', label=f'Null z-score across {num_null} resample datasets', s=2.5)
+    pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='gray', label=f'Null z-score across resamples', s=2.5)
     pyplot.scatter(x="label", y="null z-score mean", data=df_true_melt_subset, color='black', label=f'Average null z-score', s=2.5)
     pyplot.scatter(x="label", y="null z-score min", data=df_true_melt_subset, color='gray', s=0, label='')
     pyplot.scatter(x="label", y="null z-score max", data=df_true_melt_subset, color='gray', s=0, label='')
@@ -987,9 +985,9 @@ def multi_dataset_plot_deviation(subtree,
     labelpad = df_annotations.loc[df_annotations['subtree_type']==subtree]['labelpad'].values[0]    
     
     if cutoff==None:
-        pyplot.xlabel(f'All {subtree} combinations', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+        pyplot.xlabel(f'All {subtree} combinations', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
     else:
-        pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=52.5, **{'fontname':'Arial', 'size':8})
+        pyplot.xlabel(f'{subtree.capitalize()} combinations \n(top {int(len(df_true_melt_dataset_label_c_c)/len(dataset_names))} by abs z-score)', labelpad=labelpad, **{'fontname':'Arial', 'size':8})
 
     if save==True:
         pyplot.savefig(f"{image_save_path}.{image_format}", dpi=dpi, bbox_inches="tight")
