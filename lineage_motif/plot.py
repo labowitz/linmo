@@ -59,7 +59,7 @@ def dfs_for_plotting(dfs_c, num_resamples, subtree_dict, cutoff='auto', num_null
         min_cell_types (int, optional): Use subtrees with only a minimal amount of different cell types.
 
     Returns:
-        (tuple): Contains the following DataFrames.
+        (tuple): Contains the following variables.
         
         - subtree_dict (dict): Keys are subtrees, values are integers. Remade using min_cell_types (excludes subtrees with lower min_cell_types).
         - df_true_melt_subset (DataFrame): DataFrame indexed by `cutoff` number of most significant subtrees for plotting.
