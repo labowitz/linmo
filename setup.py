@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 
-with open("lineage_motif/__init__.py", "r") as f:
+with open("linmo/__init__.py", "r") as f:
     init = f.readlines()
 
 for line in init:
@@ -19,11 +19,11 @@ for line in init:
 
 
 setup(
-    name='lineage_motif',
+    name='linmo',
     version=__version__,
     author=__author__,
     author_email=__email__,
-    description='Package for Lineage Motif Analysis. Extracts statistically over- or under- represented subtrees within a set of lineage trees.',
+    description='Package for Lineage Motif Analysis. Extracts statistically over- or under- represented cell fate patterns within a set of lineage trees.',
     long_description=long_description,
     long_description_content_type='ext/markdown',
     packages=find_packages(),
