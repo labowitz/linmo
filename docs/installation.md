@@ -9,10 +9,14 @@ source activate linmo
 
 ## Installation
 
-Installation with PyPI using pip is not currently supported. To install the `linmo ` package directly from GitHub, enter the following in terminal.
+Installation with PyPI using pip can be done by entering the following in terminal.
 
 ```
-python -m pip install -e 'https://github.com/tranmartin45/linmo.git'
+pip install linmo
 ```
 
-Note that the installation is done with `-e`, meaning that the package will be editable (primarily for pre-release testing).
+Alternatively, install the `linmo ` package directly from GitHub by entering the following in terminal.
+
+```
+python -m pip install 'https://github.com/tranmartin45/linmo.git'
+```
