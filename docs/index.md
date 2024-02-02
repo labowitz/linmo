@@ -1,8 +1,8 @@
 # Lineage Motif Analysis (LMA)
 
-![](assets/Fullsize_Fades.gif)
+![](assets/240201_GIF.gif)
 <figure markdown>
-  <figcaption>Schematic of LMA - Figure 1c from the paper</figcaption>
+  <figcaption>Schematic of LMA - Figure 2 from the paper</figcaption>
 </figure>
 
 ## Table Of Contents
